@@ -1,0 +1,91 @@
+/* === Load Inter font === */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* === Tailwind core === */
+@import "tailwindcss";
+
+/* === Scan for class usage === */
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+
+/* === Enable daisyUI === */
+@plugin "daisyui";
+
+/* === DaisyUI theme config === */
+@plugin "daisyui" {
+  themes: corporate --default, black;
+}
+
+/* === Custom Utilities === */
+
+/* Font */
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+
+/* === Stable, thin scrollbars that "appear" on hover (no layout shift) === */
+:root {
+  --sb-size: 8px;
+  --sb-radius: 9999px;
+  --sb-thumb: rgba(100, 100, 100, .30);
+  --sb-thumb-hover: rgba(100, 100, 100, .55);
+}
+
+html[data-theme="dark"] {
+  --sb-thumb: rgba(255, 255, 255, .20);
+  --sb-thumb-hover: rgba(255, 255, 255, .40);
+}
+
+/* These are your scroll containers */
+.sidebar-scroll,
+.content-scroll {
+  /* prevent jump even in classic-scrollbar OS */
+  scrollbar-gutter: stable both-edges;
+
+  /* Firefox: keep width thin ALWAYS; hide the thumb by making it transparent */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent; /* thumb transparent by default */
+}
+
+/* Firefox: show thumb color on hover only */
+.sidebar-scroll:hover,
+.content-scroll:hover {
+  scrollbar-color: var(--sb-thumb) transparent;
+}
+
+/* WebKit (Chrome/Edge/Safari): keep width constant ALWAYS */
+.sidebar-scroll::-webkit-scrollbar,
+.content-scroll::-webkit-scrollbar {
+  width: var(--sb-size);      /* constant width */
+  height: var(--sb-size);
+}
+
+/* Track stays transparent */
+.sidebar-scroll::-webkit-scrollbar-track,
+.content-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 4px 0; /* optional top/bottom gap */
+}
+
+/* Thumb is transparent by default -> looks hidden but width is reserved */
+.sidebar-scroll::-webkit-scrollbar-thumb,
+.content-scroll::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: var(--sb-radius);
+  border: 2px solid transparent;  /* inset look when visible */
+  background-clip: content-box;
+}
+
+/* On hover: reveal thumb color (no width change -> no shift) */
+.sidebar-scroll:hover::-webkit-scrollbar-thumb,
+.content-scroll:hover::-webkit-scrollbar-thumb {
+  background-color: var(--sb-thumb);
+}
+
+.sidebar-scroll:hover::-webkit-scrollbar-thumb:hover,
+.content-scroll:hover::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sb-thumb-hover);
+}
