@@ -35,6 +35,7 @@
         <x-layouts.sidebar/>
     </div>
 
+    <x-toasts/>
     @livewireScripts
 
     
