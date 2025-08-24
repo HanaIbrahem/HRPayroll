@@ -26,6 +26,10 @@
                 <x-nav.link route="employee"  match="employee.*" class="mb-1">
                     Employees
                 </x-nav.link>
+
+                 <x-nav.link route="zone"  match="zone.*" class="mb-1">
+                    Zone
+                </x-nav.link>
                 <x-nav.group title="⚙️ Management" :match="['users.*','orders.*','reports.*']" class="mb-1">
                     <x-nav.link  match="users.*" size="sm">👥 Users</x-nav.link>
                     <x-nav.link  match="orders.*" size="sm">📦 Orders</x-nav.link>

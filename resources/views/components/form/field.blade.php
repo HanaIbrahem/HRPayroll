@@ -1,10 +1,11 @@
-@props(['title' => '', 'for' => null, 'required' => false, 'full' => false])
-<div {{ $attributes->class(['form-control group mb-2', 'md:col-span-2' => $full]) }}>
+@props(['title' => '', 'for' => null, 'class'=>'', 'required' => false, 'full' => false])
+<div class="form-control group {{ $class}}">
   <x-form.lable :title="$title" :for="$for" :required="$required" />
-
+  
   <div class="rounded-xl p-2 transition-colors">
-    {{ $slot }}
+   {{ $slot }}
+      
   </div>
-
   <x-form.errors :for="$for" />
+
 </div>

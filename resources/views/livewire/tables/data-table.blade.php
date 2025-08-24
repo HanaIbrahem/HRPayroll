@@ -136,7 +136,7 @@
                                 <div class="flex items-center gap-1">
                                     @if ($editUrl)
                                     {{-- SPA on v3, normal link on v2 --}}
-                                    <a href="{{ $editUrl }}" wire:navigate class="btn btn-ghost btn-xs">
+                                    <a href="{{ $editUrl }}" wire:navigate class="btn btn- btn-xs">
                                         Edit
                                     </a>
                                     @else

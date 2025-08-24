@@ -1,7 +1,5 @@
 @props(['title'=>'','description'=>''])
-<div class="space-y-6">
-
-
+<div>
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-semibold tracking-tight">{{$title}}</h2>
@@ -11,15 +9,9 @@
             @endif
         </div>
     </div>
-
-
     <div class="card bg-base-100 border border-base-300/60">
         <div class="card-body">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                {{ $slot }}
-            </div>
+            {{ $slot }}
         </div>
     </div>
-
 </div>
