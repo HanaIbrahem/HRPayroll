@@ -25,7 +25,7 @@
                 </div>
 
                 <div class="card-body">
-                    <h2 class="text-2xl font-bold text-center">Login</h2>
+                    <h2 class="text-2xl font-bold text-center">Login to checklist</h2>
 
                     @if ($errors->any())
                         <div class="alert alert-error mt-3">
@@ -62,29 +62,13 @@
                                     class="input input-primary join-item w-full"
                                     placeholder="••••••••" />
 
-                                <button
-                                    type="button"
-                                    id="togglePassword"
-                                    class="btn join-item btn-ghost "
-                                    aria-label="Show password"
-                                    aria-pressed="false">
-                                    <!-- eye open -->
-                                    <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M2.25 12s3.75-6.75 9.75-6.75S21.75 12 21.75 12s-3.75 6.75-9.75 6.75S2.25 12 2.25 12z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                    <!-- eye off -->
-                                    <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M3.98 8.223A10.477 10.477 0 001.5 12s3.75 6.75 9.75 6.75a10.46 10.46 0 004.33-.93M6.75 6.75l10.5 10.5M9.53 9.53a3 3 0 104.24 4.24" />
-                                    </svg>
-                                </button>
+                         
                             </div>
                            
+                        </div>
+                        <div class="form-control">
+                            <input type="checkbox" class="checkbox" id="togglePassword">
+                            <label class="label-text" for="">Show Password</label>
                         </div>
 
                         <div class="form-control my-2">
@@ -95,7 +79,7 @@
                 </label>
                         </div>
                         <div class="form-control mt-2">
-                            <button type="submit" class="btn btn-primary w-full">Login</button>
+                            <button type="submit" class="btn btn-primary w-full rounded-3xl">Login</button>
                         </div>
                     </form>
 

@@ -7,18 +7,20 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use App\Models\Checklist;
 use App\Models\Employee;
+use App\Services\ExcelZonesProvider;
+
 
 class ChecklistComponent extends Component
 {
-   
-
     use WithFileUploads;
 
     public ?int $employee_id = null;
     public string $employeeSearch = '';
-    public $file; // TemporaryUploadedFile
+    /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
+    public $file;
 
     protected function rules(): array
     {
@@ -29,7 +31,7 @@ class ChecklistComponent extends Component
                     fn ($q) => $q->where('user_id', Auth::id())
                 ),
             ],
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:20480'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:20480'], // 20 MB
         ];
     }
 
@@ -40,22 +42,30 @@ class ChecklistComponent extends Component
         }
     }
 
-    /** Called by the suggestion button to set selected employee */
     public function chooseEmployee(int $id, string $label): void
     {
         $this->employee_id    = $id;
-        $this->employeeSearch = $label; // visible text in the input
+        $this->employeeSearch = $label;
         $this->resetErrorBag('employee_id');
     }
 
-    public function save(): void
+    public function save(ExcelZonesProvider $provider): void
     {
-        $data = $this->validate();
+        $this->validate();
 
-        // Extra safety: ensure manager owns this employee
+        // Ensure manager owns this employee
         $employee = Employee::select('id', 'user_id')->findOrFail($this->employee_id);
         Gate::authorize('upload-checklist-for-employee', $employee);
 
+     
+          try {
+        $provider->process($this->file->getRealPath(), 'Data'); // read + validate zones
+    } catch (ValidationException $e) {
+        $this->addError('file', collect($e->errors())->flatten()->join(' '));
+        return;
+    }
+
+        // 2) Store after successful validation
         $path = $this->file->store('checklists', 'public');
 
         Checklist::create([
@@ -76,8 +86,6 @@ class ChecklistComponent extends Component
 
     public function render()
     {
-       
-        // Only the authenticated manager’s employees
         $employees = Employee::query()
             ->where('user_id', Auth::id())
             ->when($this->employeeSearch !== '', function ($q) {
@@ -95,5 +103,4 @@ class ChecklistComponent extends Component
 
         return view('livewire.checklist.checklist-component', compact('employees'));
     }
-
 }

@@ -1,107 +1,99 @@
 <div>
 
-   <x-form.container title="Create Checklist" description="Choose employee and upload the visits file.">
-  <form wire:submit.prevent="save" class="grid grid-cols-1 md:grid-cols-12 gap-6">
+  <x-form.container title="Create Checklist" description="Choose employee and upload the visits file.">
+    <form wire:submit.prevent="save" class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
-    {{-- Employee (typable select restricted to current manager) --}}
-    <x-form.field class="md:col-span-6" title="Employee" for="employee_id" required>
-      <div x-data="{ open:false }" @click.outside="open=false" class="relative">
-        <input type="text"
-               id="employeeSearch" name="employeeSearch"
-               wire:model.live.debounce.300ms="employeeSearch"
-               @focus="open=true"
-               class="input input-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none
+      {{-- Employee (typable select restricted to current manager) --}}
+      <x-form.field class="md:col-span-6" title="Employee" for="employee_id" required>
+        <div x-data="{ open:false }" @click.outside="open=false" class="relative">
+          <input type="text" id="employeeSearch" name="employeeSearch" wire:model.live.debounce.300ms="employeeSearch"
+            @focus="open=true" class="input input-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none
                       @error('employee_id') input-error border-error @enderror"
-               placeholder="Type to search your employees by name/code...">
-        <input type="hidden" wire:model="employee_id" id="employee_id" name="employee_id">
+            placeholder="Type to search your employees by name/code...">
+          <input type="hidden" wire:model="employee_id" id="employee_id" name="employee_id">
 
-        {{-- Suggestions --}}
-        <div x-show="open" x-transition
-             class="absolute z-20 mt-1 w-full rounded-xl border border-base-300 bg-base-100 shadow"
-             style="display:none;">
-          @if($employeeSearch === '')
+          {{-- Suggestions --}}
+          <div x-show="open" x-transition
+            class="absolute z-20 mt-1 w-full rounded-xl border border-base-300 bg-base-100 shadow"
+            style="display:none;">
+            @if($employeeSearch === '')
             <div class="p-2 text-sm text-base-content/60">Start typing...</div>
-          @elseif($employees->isEmpty())
+            @elseif($employees->isEmpty())
             <div class="p-2 text-sm text-base-content/60">No matches</div>
-          @else
+            @else
             <ul class="menu menu-sm">
               @foreach($employees as $e)
-                @php
-                  $label = trim($e->first_name.' '.$e->last_name).($e->code ? " ({$e->code})" : '');
-                @endphp
-                <li>
-                  <button type="button"
-                          @click="$wire.chooseEmployee({{ $e->id }}, @js($label)); open=false">
-                    {{ $label }}
-                  </button>
-                </li>
+              @php
+              $label = trim($e->first_name.' '.$e->last_name).($e->code ? " ({$e->code})" : '');
+              @endphp
+              <li>
+                <button type="button" @click="$wire.chooseEmployee({{ $e->id }}, @js($label)); open=false">
+                  {{ $label }}
+                </button>
+              </li>
               @endforeach
             </ul>
-          @endif
+            @endif
+          </div>
         </div>
-      </div>
-      <x-form.errors for="employee_id" />
-    </x-form.field>
+      </x-form.field>
 
-    {{-- Excel file --}}
-    <x-form.field class="md:col-span-6" title="Excel File" for="file" required>
-      <div x-data="{ uploading:false, progress:0 }"
-           x-on:livewire-upload-start="uploading=true"
-           x-on:livewire-upload-finish="uploading=false; progress=0"
-           x-on:livewire-upload-error="uploading=false"
-           x-on:livewire-upload-progress="progress=$event.detail.progress">
+      {{-- Excel file --}}
+      <x-form.field class="md:col-span-6" title="Excel File" for="file" required>
+        <div x-data="{ uploading:false, progress:0 }" x-on:livewire-upload-start="uploading=true"
+          x-on:livewire-upload-finish="uploading=false; progress=0" x-on:livewire-upload-error="uploading=false"
+          x-on:livewire-upload-progress="progress=$event.detail.progress">
 
-        <input id="file" name="file" type="file"
-               wire:model="file" accept=".xlsx,.xls,.csv"
-               class="file-input file-input-bordered w-full
+          <input id="file" name="file" type="file" wire:model="file" accept=".xlsx,.xls,.csv" class="file-input file-input-bordered w-full
                       @error('file') file-input-error border-error @enderror" />
 
-        <div class="mt-2" x-show="uploading">
-          <progress class="progress w-full" max="100" x-bind:value="progress"></progress>
-        </div>
-      </div>
-
-      <x-form.errors for="file" />
-    </x-form.field>
-
-    {{-- Live Preview --}}
-    <div class="md:col-span-12">
-      <div class="rounded-xl border border-base-300 p-4 bg-base-100">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-          <div>
-            <div class="font-semibold">Selected Employee</div>
-            <div class="text-base-content/70">
-              {{ $employee_id ? $employeeSearch : '—' }}
-            </div>
+          <div class="mt-2" x-show="uploading">
+            <progress class="progress w-full" max="100" x-bind:value="progress"></progress>
           </div>
-          <div>
-            <div class="font-semibold">File</div>
-            <div class="text-base-content/70">
-              @if($file)
+        </div>
+
+      </x-form.field>
+
+      {{-- Live Preview --}}
+      <div class="md:col-span-12">
+        <div class="rounded-xl border border-base-300 p-4 bg-base-100">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <div class="font-semibold">Selected Employee</div>
+              <div class="text-base-content/70">
+                {{ $employee_id ? $employeeSearch : '—' }}
+              </div>
+            </div>
+            <div>
+              <div class="font-semibold">File</div>
+              <div class="text-base-content/70">
+                @if($file)
                 {{ $file->getClientOriginalName() }}
                 <span class="opacity-70">
                   ({{ number_format($file->getSize() / 1024, 1) }} KB)
                 </span>
-              @else
+                @else
                 —
-              @endif
+                @endif
+              </div>
             </div>
-          </div>
-          <div>
-            <div class="font-semibold">Status</div>
-            <div class="text-base-content/70">open</div>
+            <div>
+              <div class="font-semibold">Status</div>
+              <div class="text-base-content/70">open</div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    {{-- Submit --}}
-    <div class="md:col-span-12">
-      <x-form.button class="btn-primary btn-block" type="submit">
-        Save
-      </x-form.button>
-    </div>
-  </form>
-</x-form.container>
+      {{-- Submit --}}
+      <div class="md:col-span-12">
+        <x-form.button class="btn-primary btn-block" type="submit">
+          Save
+        </x-form.button>
+      </div>
+    </form>
+  </x-form.container>
+
+
 
 </div>

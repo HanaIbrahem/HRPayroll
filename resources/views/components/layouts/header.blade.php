@@ -26,14 +26,18 @@
             <div class="dropdown dropdown-end">
                 <div tabindex="0" role="button" class="avatar btn btn-ghost btn-circle">
                     <div class="w-10 rounded-full ring-2 ring-base-300/60">
-                        <img src="https://i.pravatar.cc/40" alt="avatar" />
+                        <img src="{{ asset('profileimg.png') }}" />
                     </div>
                 </div>
                 <ul
                     class="menu dropdown-content mt-4 p-2 shadow bg-base-100 rounded-box w-56 z-30 border border-base-300/60">
-                    <li><a>Profile</a></li>
-                    <li><a>Settings</a></li>
-                    <li><a>Logout</a></li>
+                    <li>HI {{auth()->user()->first_name}}</li>
+                    <li>
+                        <form action="{{ route('logout') }}" method="post">
+                            @csrf
+                            <input type="submit"  class="font-bold text-error" value="Logout">
+                        </form>
+                    </li>
                 </ul>
             </div>
         </div>

@@ -52,7 +52,6 @@
                 <textarea id="description" name="description" rows="3" wire:model.debounce.300ms="description"
                     class="textarea textarea-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none @error('description') textarea-error border-error @enderror"
                     placeholder="Short description..."></textarea>
-                <x-form.errors for="description" />
             </x-form.field>
 
             <div class="md:col-span-12">

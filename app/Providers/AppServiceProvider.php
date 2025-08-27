@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\ExcelZonesProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\Employee;
 use App\Models\User;
@@ -16,6 +17,10 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+
+          $this->app->singleton(ExcelZonesProvider::class, function ($app) {
+            return new ExcelZonesProvider();
+        });
     }
 
     /**

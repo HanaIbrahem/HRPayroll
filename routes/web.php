@@ -31,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+
 // login routes 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [\App\Http\Controllers\AuthController::class, 'index'])->name('login');
