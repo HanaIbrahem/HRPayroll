@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('visited_zones', function (Blueprint $table) {
+             $table->id();
             $table->foreignId('checklist_id')
                 ->constrained('checklists')
                 ->cascadeOnDelete();

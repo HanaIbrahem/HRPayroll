@@ -15,7 +15,7 @@ function updateThemeIcon() {
   if (!sun || !moon) return;
 
   // show sun on light, moon on dark
-  const isDark = t === 'dark';
+  const isDark = t === 'business';
   sun.classList.toggle('hidden', isDark);
   moon.classList.toggle('hidden', !isDark);
 }
@@ -24,7 +24,7 @@ function bindThemeButton() {
   if (!btn || btn.dataset.bound === '1') return; // avoid double-binding across SPA navs
   btn.dataset.bound = '1';
   btn.addEventListener('click', () => {
-    setTheme(getTheme() === 'corporate' ? 'dark' : 'corporate');
+    setTheme(getTheme() === 'corporate' ? 'business' : 'corporate');
     updateThemeIcon();
   });
 }

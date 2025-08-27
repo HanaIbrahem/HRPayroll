@@ -19,8 +19,11 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
-        'email',
+        'username',
         'password',
+        'role',
+        'department_id',
+        'is_active'
     ];
 
     /**
@@ -36,6 +39,16 @@ class User extends Authenticatable
     public function checklist()
     {
         return $this->hasMany(Checklist::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(\App\Models\Department::class);
+    }
+
+    public function isRole(string $role): bool
+    {
+        return $this->role === $role; 
     }
     /**
      * Get the attributes that should be cast.

@@ -48,10 +48,14 @@ class EmployeeComponent extends Component
 public function updatedManagerSearch($value): void
 {
     if ($this->manager_id) {
-        $current = optional(\App\Models\User::find($this->manager_id))->name;
-        if ($current !== $value) $this->manager_id = null;
+        $u = User::find($this->manager_id);
+        $current = $u ? trim(($u->first_name ?? '').' '.($u->last_name ?? '')) : null;
+        if ($current !== $value) {
+            $this->manager_id = null;
+        }
     }
 }
+
 
 
     public function save(): void
@@ -100,22 +104,29 @@ public function updatedManagerSearch($value): void
     }
 
     public function render()
-    {
-        // live search results (limit for speed)
-        $deptResults = Department::query()
-            ->when($this->deptSearch !== '', fn($q) =>
-                $q->where('name', 'like', '%' . $this->deptSearch . '%'))
-            ->orderBy('name')
-            ->limit(8)
-            ->get(['id', 'name']);
+{
+    $deptResults = Department::query()
+        ->when($this->deptSearch !== '', fn($q) =>
+            $q->where('name', 'like', '%'.$this->deptSearch.'%'))
+        ->orderBy('name')
+        ->limit(8)
+        ->get(['id','name']);
 
-        $managerResults = User::query()
-            ->when($this->managerSearch !== '', fn($q) =>
-                $q->where('name', 'like', '%' . $this->managerSearch . '%'))
-            ->orderBy('name')
-            ->limit(8)
-            ->get(['id', 'name']);
+    // 🔧 FIX: search + order + select using first_name/last_name
+    $managerResults = User::query()
+        ->when($this->managerSearch !== '', function ($q) {
+            $s = $this->managerSearch;
+            $q->where(function ($qq) use ($s) {
+                $qq->where('first_name', 'like', "%{$s}%")
+                   ->orWhere('last_name', 'like', "%{$s}%")
+                   ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$s}%"]);
+            });
+        })
+        ->orderBy('first_name')
+        ->orderBy('last_name')
+        ->limit(8)
+        ->get(['id','first_name','last_name']); // <- no `name`
 
-        return view('livewire.employee.employee-component', compact('deptResults', 'managerResults'));
-    }
+    return view('livewire.employee.employee-component', compact('deptResults','managerResults'));
+}
 }

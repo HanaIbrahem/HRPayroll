@@ -58,7 +58,7 @@ class EmployeeTable extends DataTable
             'filter'     => 'text',       
         ],
          [
-            'field'      => 'user.name',
+            'field'      => 'user.first_name',
             'label'      => 'Manager',
             'type'       => 'text',      
             'searchable' => false,          

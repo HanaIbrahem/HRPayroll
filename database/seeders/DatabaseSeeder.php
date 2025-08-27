@@ -17,15 +17,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Department::factory(40)->create();
+        // Department::factory(10)->create();
+        // Zone::factory(count: 100)->create();
+        Employee::factory(10)->create();
         // User::factory(10)->create();
-        // Employee::factory(50)->create();
-
-
-        Zone::factory(100)->create();
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
+        // User::factory()->create(attributes: [
+        //     'first_name' => 'admin',
+        //     'last_name' => 'admin',
+        //     'username' => 'admin',
+        //     'role'=>'admin'
         // ]);
     }
 }

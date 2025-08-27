@@ -16,7 +16,7 @@
 
 /* === DaisyUI theme config === */
 @plugin "daisyui" {
-  themes: corporate --default, black;
+  themes: corporate --default, business;
 }
 
 /* === Custom Utilities === */
@@ -35,7 +35,7 @@
   --sb-thumb-hover: rgba(100, 100, 100, .55);
 }
 
-html[data-theme="dark"] {
+html[data-theme="business"] {
   --sb-thumb: rgba(255, 255, 255, .20);
   --sb-thumb-hover: rgba(255, 255, 255, .40);
 }
