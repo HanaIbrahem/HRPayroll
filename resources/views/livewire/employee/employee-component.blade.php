@@ -80,6 +80,7 @@
             <div class="p-2 text-sm text-base-content/60">No matches</div>
             @else
             <ul class="menu menu-sm">
+
               @foreach($managerResults as $m)
               <li>
                 <button type="button" @click="$wire.chooseManager({{ $m->id }}, @js($m->name)); open=false">
@@ -87,6 +88,7 @@
                 </button>
               </li>
               @endforeach
+
             </ul>
             @endif
           </div>

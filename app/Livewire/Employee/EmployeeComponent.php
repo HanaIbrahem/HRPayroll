@@ -37,24 +37,25 @@ class EmployeeComponent extends Component
 
     // used for clearing the result
     public function updatedDeptSearch($value): void
-{
-    // If user is typing something that doesn't equal the picked label, clear the id
-    if ($this->department_id) {
-        $current = optional(\App\Models\Department::find($this->department_id))->name;
-        if ($current !== $value) $this->department_id = null;
-    }
-}
-
-public function updatedManagerSearch($value): void
-{
-    if ($this->manager_id) {
-        $u = User::find($this->manager_id);
-        $current = $u ? trim(($u->first_name ?? '').' '.($u->last_name ?? '')) : null;
-        if ($current !== $value) {
-            $this->manager_id = null;
+    {
+        // If user is typing something that doesn't equal the picked label, clear the id
+        if ($this->department_id) {
+            $current = optional(\App\Models\Department::find($this->department_id))->name;
+            if ($current !== $value)
+                $this->department_id = null;
         }
     }
-}
+
+    public function updatedManagerSearch($value): void
+    {
+        if ($this->manager_id) {
+            $u = User::find($this->manager_id);
+            $current = $u ? trim(($u->first_name ?? '') . ' ' . ($u->last_name ?? '')) : null;
+            if ($current !== $value) {
+                $this->manager_id = null;
+            }
+        }
+    }
 
 
 
@@ -104,29 +105,31 @@ public function updatedManagerSearch($value): void
     }
 
     public function render()
-{
-    $deptResults = Department::query()
-        ->when($this->deptSearch !== '', fn($q) =>
-            $q->where('name', 'like', '%'.$this->deptSearch.'%'))
-        ->orderBy('name')
-        ->limit(8)
-        ->get(['id','name']);
+    {
+        $deptResults = Department::query()
+            ->when($this->deptSearch !== '', fn($q) =>
+                $q->where('name', 'like', '%' . $this->deptSearch . '%'))
+            ->orderBy('name')
+            ->limit(8)
+            ->get(['id', 'name']);
 
-    // 🔧 FIX: search + order + select using first_name/last_name
-    $managerResults = User::query()
-        ->when($this->managerSearch !== '', function ($q) {
-            $s = $this->managerSearch;
-            $q->where(function ($qq) use ($s) {
-                $qq->where('first_name', 'like', "%{$s}%")
-                   ->orWhere('last_name', 'like', "%{$s}%")
-                   ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$s}%"]);
-            });
-        })
-        ->orderBy('first_name')
-        ->orderBy('last_name')
-        ->limit(8)
-        ->get(['id','first_name','last_name']); // <- no `name`
 
-    return view('livewire.employee.employee-component', compact('deptResults','managerResults'));
-}
+            $managerResults = User::query()
+    // ->managers()        // uncomment if you have a managers scope/flag
+    ->active()             // optional if you only want active users
+    ->when($this->managerSearch !== '', function ($q) {
+        $s = mb_strtolower(trim($this->managerSearch));
+        $q->where(function ($qq) use ($s) {
+            $qq->whereRaw('LOWER(first_name) LIKE ?', ["%{$s}%"])
+               ->orWhereRaw('LOWER(last_name) LIKE ?',  ["%{$s}%"])
+               ->orWhereRaw("LOWER(CONCAT(COALESCE(first_name,''),' ',COALESCE(last_name,''))) LIKE ?", ["%{$s}%"]);
+        });
+    })
+    ->orderBy('first_name')
+    ->orderBy('last_name')
+    ->limit(8)
+    ->get(['id','first_name','last_name']);  // accessor gives ->name
+
+        return view('livewire.employee.employee-component', compact('deptResults', 'managerResults'));
+    }
 }

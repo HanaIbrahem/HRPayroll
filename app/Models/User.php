@@ -50,6 +50,16 @@ class User extends Authenticatable
     {
         return $this->role === $role; 
     }
+
+    public function getNameAttribute(): string
+    {
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
+    }
+     // return only acive rows
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
     /**
      * Get the attributes that should be cast.
      *

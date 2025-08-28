@@ -15,4 +15,9 @@ class Department extends Model
     {
         return $this->hasMany(Employee::class);
     }
+     // return only acive rows
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
 }

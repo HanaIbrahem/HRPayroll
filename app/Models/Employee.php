@@ -20,6 +20,11 @@ class Employee extends Model
         return $this->belongsTo(User::class);
     }
 
+    // return only acive rows
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
     // full name
     public function getFullNameAttribute(): string
     {

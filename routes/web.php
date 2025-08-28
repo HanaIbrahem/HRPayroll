@@ -1,6 +1,8 @@
 <?php
 
 use App\Livewire\Checklist\ChecklistComponent;
+use App\Livewire\Checklist\ChecklistCreate;
+use App\Livewire\Checklist\ChecklistEdit;
 use App\Livewire\Dashboard;
 use App\Livewire\Departments\DepartmentComponent;
 use App\Livewire\Departments\DepartmentEdit;
@@ -28,6 +30,8 @@ Route::middleware(['auth'])->group(function () {
 
     // checklist
     Route::get('/checklist', ChecklistComponent::class)->name('checklist');
+    Route::get('/checklist/create', ChecklistCreate::class)->name('checklist.create');
+    Route::get('/checklist/edit/{checklist}', ChecklistEdit::class)->name('checklist.edit');
 
 });
 

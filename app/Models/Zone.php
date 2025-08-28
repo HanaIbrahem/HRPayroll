@@ -11,6 +11,17 @@ class Zone extends Model
     use HasFactory;
 
     protected $guarded=[];
+
+    public function visitedZones()
+    {
+        return $this->hasMany(VisitedZone::class);
+    }
+    
+     // return only acive rows
+    public function scopeActive($q)
+    {
+        return $q->where('is_active', true);
+    }
 }
     
 
