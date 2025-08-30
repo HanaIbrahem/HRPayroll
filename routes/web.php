@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Auth\UserComponent;
+use App\Livewire\Auth\UserEdit;
 use App\Livewire\Checklist\ChecklistComponent;
 use App\Livewire\Checklist\ChecklistCreate;
 use App\Livewire\Checklist\ChecklistEdit;
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
 
     Route::get('/department', DepartmentComponent::class)->name('department');
@@ -32,6 +34,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/checklist', ChecklistComponent::class)->name('checklist');
     Route::get('/checklist/create', ChecklistCreate::class)->name('checklist.create');
     Route::get('/checklist/edit/{checklist}', ChecklistEdit::class)->name('checklist.edit');
+
+    // authentication 
+    Route::get('/users',UserComponent::class)->name('user');
+    Route::get('/uses/edit/{user}',UserEdit::class)->name('user.edit');
 
 });
 

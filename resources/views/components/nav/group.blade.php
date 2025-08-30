@@ -19,7 +19,11 @@
         $opened ? 'collapse-open' : '',
     ]) }}>
     <input type="checkbox" {{ $opened ? 'checked' : '' }} />
+
     <div class="collapse-title text-sm font-medium flex items-center gap-2">
+        @isset($icon)
+           {{ $icon }} 
+        @endisset
         {{ $title }}
     </div>
     <div class="collapse-content flex flex-col gap-1">
