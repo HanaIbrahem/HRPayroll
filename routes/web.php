@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 
 
-
+// admin roues 
 Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('/', Dashboard::class)->name('dashboard');
 
@@ -29,17 +29,27 @@ Route::middleware(['auth','role:admin'])->group(function () {
     // zones
     Route::get('/zone', ZoneComponent::class)->name('zone');
     Route::get('/zone/edit/{zone}', ZoneEdit::class)->name('zone.edit');
-
-    // checklist
-    Route::get('/checklist', ChecklistComponent::class)->name('checklist');
-    Route::get('/checklist/create', ChecklistCreate::class)->name('checklist.create');
-    Route::get('/checklist/edit/{checklist}', ChecklistEdit::class)->name('checklist.edit');
-
     // authentication 
     Route::get('/users',UserComponent::class)->name('user');
     Route::get('/uses/edit/{user}',UserEdit::class)->name('user.edit');
 
 });
+
+// manager routes 
+Route::middleware(['auth','role:manager'])->group(function () {
+
+   // checklist
+    Route::get('/checklist', ChecklistComponent::class)->name('checklist');
+    Route::get('/checklist/create', ChecklistCreate::class)->name('checklist.create');
+    Route::get('/checklist/edit/{checklist}', ChecklistEdit::class)->name('checklist.edit');
+
+});
+
+
+// hr routes
+Route::middleware(['auth','role:hr'])->group(function () {
+});
+
 
 
 // login routes 

@@ -17,16 +17,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        Department::factory(10)->create();
-        Zone::factory(count: 100)->create();
-        User::factory(20)->create();
-        Employee::factory(10)->create();
+        // Department::factory(count: 10)->create();
+        // Zone::factory(count: 100)->create();
+        // User::factory(20)->create();
+        Employee::factory(400)->create();
 
-        User::factory()->create(attributes: [
-            'first_name' => 'admin',
-            'last_name' => 'admin',
-            'username' => 'admin',
-            'role'=>'admin'
-        ]);
+        // User::factory()->create(attributes: [
+        //     'first_name' => 'admin',
+        //     'last_name' => 'admin',
+        //     'username' => 'admin',
+        //     'role'=>'admin'
+        // ]);
     }
 }

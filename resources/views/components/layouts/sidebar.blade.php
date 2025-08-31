@@ -27,7 +27,10 @@
           </span>
         </x-nav.link>
 
-        <p class="px-3 pt-3 text-[11px] font-semibold uppercase text-base-content/60">Manage</p>
+        {{-- administrtor routes  --}}
+
+        @if (auth()->user()->isRole('admin'))
+          <p class="px-3 pt-3 text-[11px] font-semibold uppercase text-base-content/60">Manage</p>
 
         <x-nav.link route="department" match="department.*" class="mb-1">
           <span class="inline-flex items-center gap-2">
@@ -80,8 +83,12 @@
             <span>Authentication</span>
           </span>
         </x-nav.link>
+        @endif
+        
 
-        <x-nav.group title="Checklist" match="checklist.*" class="mb-1">
+       {{-- mnager routes --}}
+        @if (auth()->user()->isRole('manager'))
+           <x-nav.group title="Checklist" match="checklist.*" class="mb-1">
 
           <x-slot:icon>
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -117,6 +124,14 @@
             </span>
           </x-nav.link>
         </x-nav.group>
+        @endif
+
+        {{-- HR  routes --}}
+
+        @if (auth()->user()->isRole('hr'))
+
+        @endif
+
       </nav>
 
     </div>

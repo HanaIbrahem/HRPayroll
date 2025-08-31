@@ -23,7 +23,7 @@ class ZoneTable extends DataTable
             ['field' => 'km', 'label' => 'KM', 'type' => 'number', 'searchable' => true, 'sortable' => true, 'filter' => 'text'],
             ['field' => 'fixed_rate', 'label' => 'Fixed (IQD)', 'type' => 'number', 'searchable' => true, 'sortable' => true, 'filter' => 'text'],
             ['field' => 'between_zone', 'label' => 'Between (IQD)', 'type' => 'number', 'searchable' => true, 'sortable' => true, 'filter' => 'text'],
-            ['field' => 'description', 'label' => 'Description', 'type' => 'text', 'searchable' => true, 'sortable' => false, 'filter' => 'text'],
+            ['field' => 'description', 'label' => 'Description', 'type' => 'text', 'searchable' => true, 'sortable' => false, 'filter' => 'text','width'=> 'min-w-[20rem]'],
             ['field' => 'is_active', 'label' => 'Status', 'type' => 'boolean', 'searchable' => true, 'sortable' => false, 'filter' => 'boolean','options'    => [1 => 'Active', 0 => 'Inactive'],'stutus'=>true],          
             ['field' => 'created_at', 'label' => 'Created', 'type' => 'date', 'searchable' => false, 'sortable' => true, 'filter' => 'none', 'format' => 'Y-m-d'],
         ];
