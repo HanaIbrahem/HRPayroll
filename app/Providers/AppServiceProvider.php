@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Checklist;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Database\Eloquent\Model;
@@ -33,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(true);
         Gate::define('upload-checklist-for-employee', function (User $user, Employee $employee) {
             return (int) $employee->user_id === (int) $user->id;
+        });
+
+        Gate::define('edit-checklist-for-employee', function (User $user, Checklist $checklist) {
+            return (int) $checklist->user_id === (int) $user->id;
         });
         Paginator::defaultView('vendor.pagination.daisyui');
         Paginator::defaultSimpleView('vendor.pagination.daisyui-simple');

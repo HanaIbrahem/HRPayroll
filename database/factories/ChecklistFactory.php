@@ -3,7 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-
+use App\Models\Employee;
+use App\Models\User;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Checklist>
  */
@@ -16,8 +17,14 @@ class ChecklistFactory extends Factory
      */
     public function definition(): array
     {
+        $arr=['open','pending','approved','rejected'];
         return [
             //
+            'user_id'=>8,
+            'employee_id'=>17,
+            'filename'=>fake()->filePath(),
+            'status'=>fake()->randomElement($arr),
+
         ];
     }
 }

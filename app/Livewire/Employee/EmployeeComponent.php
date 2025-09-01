@@ -117,6 +117,7 @@ class EmployeeComponent extends Component
     {
         $managerResults = User::query()
             ->where('is_active', true)
+            ->where('role','manager')
             ->whereNotNull('department_id')
             // Only show managers whose department is active
             ->whereExists(function ($s) {

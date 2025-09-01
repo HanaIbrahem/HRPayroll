@@ -26,8 +26,9 @@ class Employee extends Model
         return $q->where('is_active', true);
     }
     // full name
-    public function getFullNameAttribute(): string
+    
+    public function getFullnameAttribute(): string
     {
-        return trim("{$this->first_name} {$this->last_name}");
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
     }
 }

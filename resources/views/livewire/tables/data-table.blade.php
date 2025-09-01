@@ -41,7 +41,7 @@
         <div class="card-body p-0">
             <div class="overflow-x-auto w-full">
                 <table class="table table-sm table-zebra w-full">
-                    <thead class="bg-base-100 top-0 z-10">
+                    <thead class="bg-base-200 top-0 z-10">
                         <tr>
                             <th class="px-3 py-2 text-xs font-semibold text-base-content/70">#</th>
                             @foreach ($columns as $c)
@@ -99,7 +99,7 @@
                                         $field = $c['field'];
                                         $type  = $c['type'] ?? 'text';
                                         $val   = data_get($r, $field);
-                                        $maxLength = 100;
+                                        $maxLength = 50;
                                         $width = $c['width'] ?? 'max-w-xs';
                                     @endphp
                                     <td class="px-3 py-2 align-top whitespace-normal break-words text-xs {{ $width }}">

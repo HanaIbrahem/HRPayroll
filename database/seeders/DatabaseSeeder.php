@@ -8,6 +8,7 @@ use App\Models\Employee;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Zone;
+use App\Models\Checklist;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -20,8 +21,9 @@ class DatabaseSeeder extends Seeder
         // Department::factory(count: 10)->create();
         // Zone::factory(count: 100)->create();
         // User::factory(20)->create();
-        Employee::factory(400)->create();
+        //Employee::factory(400)->create();
 
+        Checklist::factory( 50)->create();
         // User::factory()->create(attributes: [
         //     'first_name' => 'admin',
         //     'last_name' => 'admin',
