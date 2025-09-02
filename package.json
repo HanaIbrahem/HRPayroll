@@ -15,6 +15,15 @@
         "vite": "^7.0.4"
     },
     "dependencies": {
-        "daisyui": "^5.0.50"
+        "daisyui": "^5.0.50",
+        "datatables.net-autofill-dt": "^2.7.0",
+        "datatables.net-buttons-dt": "^3.2.4",
+        "datatables.net-datetime": "^1.5.6",
+        "datatables.net-dt": "^2.3.3",
+        "datatables.net-responsive-dt": "^3.0.6",
+        "datatables.net-searchpanes-dt": "^2.3.5",
+        "jquery": "^3.7.1",
+        "jszip": "^3.10.1",
+        "pdfmake": "^0.2.20"
     }
 }

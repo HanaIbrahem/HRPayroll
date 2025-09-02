@@ -12,6 +12,13 @@ class Checklist extends Model
     use HasFactory;
     protected $guarded=[];
 
+    public const STATUS_OPEN     = 'open';
+    public const STATUS_PENDING  = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+    protected $casts = [
+        'status' => 'string',
+    ];
     
     public function user(): BelongsTo
     {
@@ -26,6 +33,27 @@ class Checklist extends Model
     public function visitedZones(): HasMany
     {
         return $this->hasMany(VisitedZone::class);
+    }
+
+     public function canEdit(): bool
+    {
+        return $this->status === self::STATUS_OPEN;
+    }
+
+    public function canDelete(): bool
+    {
+        // allowed when "open" or "rejected"
+        return in_array($this->status, [self::STATUS_OPEN, self::STATUS_REJECTED], true);
+    }
+
+    public function canMarkPending(): bool
+    {
+        return $this->status === self::STATUS_OPEN;
+    }
+
+    public function canView(): bool
+    {
+        return true; // always viewable
     }
 
 }

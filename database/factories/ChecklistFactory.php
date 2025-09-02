@@ -20,10 +20,10 @@ class ChecklistFactory extends Factory
         $arr=['open','pending','approved','rejected'];
         return [
             //
-            'user_id'=>8,
+            'user_id'=>720,
             'employee_id'=>17,
             'filename'=>fake()->filePath(),
-            'status'=>fake()->randomElement($arr),
+            'status'=>'open',
 
         ];
     }
