@@ -21,11 +21,34 @@
 
             <div class="join">
                 <button class="btn btn-sm mx-3 btn-success join-item" wire:click="export('xlsx')">Excel</button>
-                <button class="btn btn-error mx-2 btn-sm join-item" wire:click="export('pdf')">PDF</button>
             </div>
         </div>
     </div>
 
+    <div class="flex items-center gap-2">
+    <select class="select select-bordered select-sm"
+            wire:model.live="dateField"
+            title="Filter by which timestamp">
+        @foreach ($dateFields as $key => $label)
+            <option value="{{ $key }}">{{ $label }}</option>
+        @endforeach
+    </select>
+
+    <input type="date"
+           class="input input-bordered input-sm"
+           wire:model.live="dateFrom"
+           title="From date" />
+
+    <span class="text-sm text-base-content/60">to</span>
+
+    <input type="date"
+           class="input input-bordered input-sm"
+           wire:model.live="dateTo"
+           title="To date" />
+
+    
+    </button>
+</div>
     <div class="card bg-base-100 border border-base-300/60">
         <div class="card-body p-0">
             <div class="overflow-x-auto w-full">
@@ -56,8 +79,8 @@
                             <th class="px-3 py-2 text-xs font-semibold text-base-content/70 hidden sm:table-cell">Actions</th>
                         </tr>
 
-                        <!-- Filters -->
-                        <tr class="hidden xs:table-row">
+                        <!-- Filters (visible from sm breakpoint) -->
+                        <tr class="hidden sm:table-row">
                             <th class="px-3 py-2"></th>
                             @foreach ($columns as $c)
                                 @php
@@ -69,7 +92,8 @@
                                 @endphp
                                 <th class="px-3 py-2 {{ $hideSm ? 'hidden sm:table-cell' : '' }}">
                                     @if ($ftype === 'text')
-                                        <input type="text" class="input input-bordered input-xs w-full"
+                                        <input type="text"
+                                               class="input input-bordered input-xs w-full"
                                                placeholder="Filter {{ $c['label'] ?? $field }}"
                                                wire:model.live.debounce.300ms="filters.{{ $bind }}" />
                                     @elseif ($ftype === 'boolean')
@@ -87,6 +111,33 @@
                                                 <option value="{{ $val }}">{{ $label }}</option>
                                             @endforeach
                                         </select>
+
+                                    {{-- NEW: date-range inside the column --}}
+                                    @elseif ($ftype === 'date-range')
+                                        <div class="flex items-center gap-1">
+                                            <select class="select select-bordered select-xs"
+                                                    wire:model.live="dateField" title="Filter by field">
+                                                @foreach ($dateFields as $key => $label)
+                                                    <option value="{{ $key }}">{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+
+                                            <input type="date"
+                                                   class="input input-bordered input-xs"
+                                                   wire:model.live="dateFrom"
+                                                   title="From date" />
+
+                                            <span class="text-[11px] text-base-content/60">→</span>
+
+                                            <input type="date"
+                                                   class="input input-bordered input-xs"
+                                                   wire:model.live="dateTo"
+                                                   title="To date" />
+
+                                            <button class="btn btn-ghost btn-xs"
+                                                    wire:click="clearDateFilter"
+                                                    title="Clear date filter">✕</button>
+                                        </div>
                                     @endif
                                 </th>
                             @endforeach
@@ -164,18 +215,6 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M5 12h14v2H5zM5 8h14v2H5z"/></svg>
                                         </button>
 
-                                        <!-- Approve -->
-                                        {{-- <button class="btn btn-ghost btn-xs {{ $canApprove ? '' : 'pointer-events-none opacity-40' }}" title="Approve"
-                                                @click.prevent="if({{ $canApprove ? 'true' : 'false' }}) $wire.approve({{ $r->id }})">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                        </button> --}}
-
-                                        <!-- Reject -->
-                                        {{-- <button class="btn btn-ghost btn-xs {{ $canReject ? '' : 'pointer-events-none opacity-40' }}" title="Reject"
-                                                @click.prevent="if({{ $canReject ? 'true' : 'false' }}) $wire.reject({{ $r->id }})">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71 12 12l6.3 6.29-1.42 1.42L12 13.41l-6.29 6.3-1.42-1.42L10.59 12 4.29 5.71 5.71 4.29 12 10.59l6.29-6.3z"/></svg>
-                                        </button> --}}
-
                                         <!-- Delete -->
                                         <button class="btn btn-ghost btn-xs text-error {{ $canDelete ? '' : 'pointer-events-none opacity-40' }}" title="Delete"
                                                 @click.prevent="if({{ $canDelete ? 'true' : 'false' }}){ if(confirm('Delete this checklist?')) $wire.delete({{ $r->id }}) }">
@@ -221,14 +260,6 @@
                                                     @click.prevent="if({{ $canClose ? 'true' : 'false' }}) $wire.close({{ $r->id }})">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M5 12h14v2H5zM5 8h14v2H5z"/></svg>
                                             </button>
-                                            {{-- <button class="btn btn-ghost btn-xs {{ $canApprove ? '' : 'pointer-events-none opacity-40' }}" title="Approve"
-                                                    @click.prevent="if({{ $canApprove ? 'true' : 'false' }}) $wire.approve({{ $r->id }})">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                                            </button> --}}
-                                            {{-- <button class="btn btn-ghost btn-xs {{ $canReject ? '' : 'pointer-events-none opacity-40' }}" title="Reject"
-                                                    @click.prevent="if({{ $canReject ? 'true' : 'false' }}) $wire.reject({{ $r->id }})">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.3 5.71 12 12l6.3 6.29-1.42 1.42L12 13.41l-6.29 6.3-1.42-1.42L10.59 12 4.29 5.71 5.71 4.29 12 10.59l6.29-6.3z"/></svg>
-                                            </button> --}}
                                             <button class="btn btn-ghost btn-xs text-error {{ $canDelete ? '' : 'pointer-events-none opacity-40' }}" title="Delete"
                                                     @click.prevent="if({{ $canDelete ? 'true' : 'false' }}){ if(confirm('Delete this checklist?')) $wire.delete({{ $r->id }}) }">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M6 7h12v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V7zm3-3h6l1 1h4v2H4V5h4l1-1z"/></svg>
@@ -250,7 +281,7 @@
                 </table>
             </div>
 
-            <div class="p-3 border-t border-base-300/60">
+            <div class="p-3 border-t  border-base-300/60">
                 {{ $rows->onEachSide(1)->links() }}
             </div>
         </div>
