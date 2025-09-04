@@ -55,6 +55,46 @@ Route::middleware(['auth','role:manager'])->group(function () {
     Route::get('/checklist/edit/{checklist}', ChecklistEdit::class)->name('checklist.edit');
     Route::get('/checklist/{checklist}', CkecklistShow::class)->name('checklist.show');
 
+        Route::get('/checklists/{checklist}/file', function (Checklist $checklist) {
+        // Only owner can view (adjust authorization as needed)
+        abort_unless(auth()->id() === $checklist->user_id, 403);
+
+        // Resolve absolute path from DB 'filename'
+        $abs = (function (string $f) {
+            $f = ltrim($f, '/\\');
+
+            $candidates = [
+                // storage paths
+                storage_path("app/$f"),
+                storage_path("app/public/$f"),
+                // public paths (if you put files under /public/... manually)
+                public_path($f),
+                public_path("uploads/$f"),
+            ];
+
+            foreach ($candidates as $p) {
+                if (is_file($p)) return $p;
+            }
+            return null;
+        })((string) $checklist->filename);
+
+        abort_unless($abs && is_readable($abs), 404, 'File not found');
+
+        // Guess MIME; default to Excel if unknown
+        $mime = (function ($path) {
+            if (function_exists('mime_content_type')) {
+                $mt = @mime_content_type($path);
+                if ($mt) return $mt;
+            }
+            return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        })($abs);
+
+        return response()->file($abs, [
+            'Content-Type'        => $mime,
+            'Content-Disposition' => 'inline; filename="'.basename($abs).'"',
+        ]);
+    })->name('checklists.file');
+
 });
 
 
