@@ -54,7 +54,7 @@ class ChecklistCreate extends Component
                     fn($q) => $q->where('user_id', Auth::id())
                 ),
             ],
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:20480'], // 20 MB
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2480'], // 2 MB
         ];
     }
 

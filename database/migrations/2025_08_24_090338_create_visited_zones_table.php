@@ -25,7 +25,6 @@ return new class extends Migration
 
             $table->unsignedInteger('zone_count')->default(1);   
             $table->unsignedInteger('repeat_count')->default(1); 
-            $table->unsignedInteger('km')->nullable();                        
             $table->unsignedBigInteger('calculated_cost')->default(0); 
 
             $table->timestamps();

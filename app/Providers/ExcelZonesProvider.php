@@ -12,8 +12,8 @@ use Box\Spout\Reader\SheetInterface;
 class ExcelZonesProvider
 {
     /** Arabic → Latin digits map */
-    private const ARABIC_DIGITS = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
-    private const LATIN_DIGITS  = ['0','1','2','3','4','5','6','7','8','9'];
+    private const ARABIC_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    private const LATIN_DIGITS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
     /**
      * Parse and return ONLY the three columns:
@@ -38,7 +38,7 @@ class ExcelZonesProvider
             $reader = ReaderEntityFactory::createReaderFromFile($path);
             $reader->open($path);
         } catch (\Throwable $e) {
-            $this->fail(['file' => 'Unable to read Excel file: '.$e->getMessage()]);
+            $this->fail(['file' => 'Unable to read Excel file: ' . $e->getMessage()]);
         }
 
         $target = $this->findSheetByName($reader, $sheet);
@@ -57,7 +57,7 @@ class ExcelZonesProvider
         }
 
         return [
-            'rows'         => $rows,
+            'rows' => $rows,
             'unique_zones' => $uniqueZones,
         ];
     }
@@ -101,7 +101,7 @@ class ExcelZonesProvider
             ->whereIn('code', $codes)
             ->orderByDesc('updated_at')   // prefer latest updated
             ->orderBy('id')               // tiebreaker
-            ->get(['id','code'])
+            ->get(['id', 'code'])
             ->unique('code')              // collapse duplicates by code
             ->pluck('id', 'code')
             ->all();
@@ -109,7 +109,7 @@ class ExcelZonesProvider
         // Guard against any mapping holes (shouldn't happen after validateZonesExist)
         $missingMap = array_values(array_diff($codes, array_keys($zonesMap)));
         if ($missingMap) {
-            $this->fail(['zones_map' => 'Unable to map these codes to active zones: '.implode(', ', $missingMap).'.']);
+            $this->fail(['zones_map' => 'Unable to map these codes to active zones: ' . implode(', ', $missingMap) . '.']);
         }
 
         $now = now();
@@ -122,17 +122,17 @@ class ExcelZonesProvider
 
             $toInsert[] = [
                 'checklist_id' => $checklistId,
-                'zone_id'      => $zoneId,
-                'zone_count'   => $zoneCount,
+                'zone_id' => $zoneId,
+                'zone_count' => $zoneCount,
                 'repeat_count' => $repeatCount,
-                'created_at'   => $now,
-                'updated_at'   => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
             ];
 
             $itemsOut[] = [
-                'zone_code'    => $code,
-                'zone_id'      => $zoneId,
-                'zone_count'   => $zoneCount,
+                'zone_code' => $code,
+                'zone_id' => $zoneId,
+                'zone_count' => $zoneCount,
                 'repeat_count' => $repeatCount,
             ];
         }
@@ -157,7 +157,7 @@ class ExcelZonesProvider
      */
     public function validateZonesExist(array $zoneCodes): void
     {
-        $zoneCodes = array_values(array_unique(array_map(fn($z) => (string)$z, $zoneCodes)));
+        $zoneCodes = array_values(array_unique(array_map(fn($z) => (string) $z, $zoneCodes)));
         if (empty($zoneCodes)) {
             $this->fail(['zones' => 'No zone codes found in the sheet.']);
         }
@@ -184,13 +184,16 @@ class ExcelZonesProvider
             ->pluck('code')
             ->all();
 
-        $missing  = array_values(array_diff($zoneCodes, $allFound));
+        $missing = array_values(array_diff($zoneCodes, $allFound));
         $inactive = array_values(array_diff($allFound, $active));
 
         $errors = [];
-        if ($missing)  $errors['zones_missing']   = 'These zone code(s) do not exist: '.implode(', ', $missing).'.';
-        if ($inactive) $errors['zones_inactive']  = 'These zone code(s) are inactive: '.implode(', ', $inactive).'.';
-        if ($dups)     $errors['zones_duplicate'] = 'Duplicate zone code(s) in database: '.implode(', ', $dups).'. Please fix zones.';
+        if ($missing)
+            $errors['zones_missing'] = 'These zone code(s) do not exist: ' . implode(', ', $missing) . '.';
+        if ($inactive)
+            $errors['zones_inactive'] = 'These zone code(s) are inactive: ' . implode(', ', $inactive) . '.';
+        if ($dups)
+            $errors['zones_duplicate'] = 'Duplicate zone code(s) in database: ' . implode(', ', $dups) . '. Please fix zones.';
 
         if ($errors) {
             $this->fail($errors);
@@ -201,15 +204,52 @@ class ExcelZonesProvider
 
     private function normalizePath(string $filePath): string
     {
-        if (str_starts_with($filePath, 'public/')) {
-            return storage_path('app/'.$filePath); // e.g. public/checklists/...
-        }
-        if (str_starts_with($filePath, 'storage/')) {
-            return base_path($filePath);
-        }
-        return $filePath; // absolute path
-    }
+        $p = trim($filePath);
 
+        // If it's already absolute (Unix /, Windows C:\, UNC \\server\)
+        if (preg_match('~^([a-zA-Z]:[\\/]|/|\\\\\\\\)~', $p)) {
+            return $p;
+        }
+
+        // Normalize slashes and strip leading /
+        $p = ltrim(str_replace('\\', '/', $p), '/');
+
+        // 1) If someone saved with "public/..." (public disk physical path is storage/app/public/...)
+        if (str_starts_with($p, 'public/')) {
+            $candidate = storage_path('app/' . $p); // -> storage/app/public/...
+            if (is_file($candidate))
+                return $candidate;
+        }
+
+        // 2) Browser-style "storage/..." (symlink) → real file under storage/app/public/...
+        if (str_starts_with($p, 'storage/')) {
+            $rel = preg_replace('~^storage/~', '', $p);
+            $candidate = storage_path('app/public/' . $rel);
+            if (is_file($candidate))
+                return $candidate;
+            // also try the public symlink (rarely needed server-side)
+            $publicSymlink = public_path($p);
+            if (is_file($publicSymlink))
+                return $publicSymlink;
+        }
+
+        // 3) Plain relative like "checklists/..." — try private first, then public
+        $local = storage_path('app/' . $p);           // local (private)
+        if (is_file($local))
+            return $local;
+
+        $public = storage_path('app/public/' . $p);   // public disk
+        if (is_file($public))
+            return $public;
+
+        // 4) As a last resort, try under public/ root
+        $publicRoot = public_path($p);
+        if (is_file($publicRoot))
+            return $publicRoot;
+
+        // Nothing matched — return as-is (so caller can see failure)
+        return $filePath;
+    }
     private function findSheetByName($reader, string $sheet): ?SheetInterface
     {
         $want = mb_strtolower(trim($sheet));
@@ -240,13 +280,13 @@ class ExcelZonesProvider
                 // Detect header row
                 foreach ($cells as $k => $cell) {
                     $lower = mb_strtolower($cell);
-                    if (in_array($lower, ['زون','زوون','zone'], true)) {
+                    if (in_array($lower, ['زون', 'زوون', 'zone'], true)) {
                         $headerFound = true;
 
                         // Find indices of the three headers in this row
                         foreach ($cells as $kk => $h) {
                             $hh = mb_strtolower($h);
-                            if ($zoneIdx === null && in_array($hh, ['زون','زوون','zone'], true)) {
+                            if ($zoneIdx === null && in_array($hh, ['زون', 'زوون', 'zone'], true)) {
                                 $zoneIdx = $kk;
                             }
                             if ($countIdx === null && ($hh === 'عدد ماركتات زون' || str_contains($hh, 'ماركتات'))) {
@@ -267,21 +307,23 @@ class ExcelZonesProvider
                 $this->fail(['excel' => "Could not detect headers: زون / عدد ماركتات زون / عدد تكرار زون."]);
             }
 
-            $zoneStr  = $this->toLatinDigits((string)($cells[$zoneIdx]  ?? ''));
-            $countStr = $this->toLatinDigits((string)($cells[$countIdx] ?? ''));
-            $repStr   = $this->toLatinDigits((string)($cells[$repIdx]   ?? ''));
+            $zoneStr = $this->toLatinDigits((string) ($cells[$zoneIdx] ?? ''));
+            $countStr = $this->toLatinDigits((string) ($cells[$countIdx] ?? ''));
+            $repStr = $this->toLatinDigits((string) ($cells[$repIdx] ?? ''));
 
-            $zoneNum  = (int) preg_replace('/\D+/', '', $zoneStr);
-            $countNum = is_numeric($countStr) ? (int)$countStr : 0;
-            $repNum   = is_numeric($repStr)   ? (int)$repStr   : 0;
+            $zoneNum = (int) preg_replace('/\D+/', '', $zoneStr);
+            $countNum = is_numeric($countStr) ? (int) $countStr : 0;
+            $repNum = is_numeric($repStr) ? (int) $repStr : 0;
 
-            if ($zoneNum <= 0) continue;
-            if ($countNum === 0 && $repNum === 0) continue;
+            if ($zoneNum <= 0)
+                continue;
+            if ($countNum === 0 && $repNum === 0)
+                continue;
 
             $rows[] = [
-                'zone'          => $zoneNum,
+                'zone' => $zoneNum,
                 'markets_count' => $countNum,
-                'zone_repeats'  => $repNum,
+                'zone_repeats' => $repNum,
             ];
             $zonesSet[$zoneNum] = true;
         }
@@ -295,9 +337,11 @@ class ExcelZonesProvider
 
     private function cleanCell($v): string
     {
-        if ($v instanceof \DateTimeInterface) return $v->format('Y-m-d');
-        if ($v === null) return '';
-        $s = str_replace("\xC2\xA0", ' ', (string)$v); // NBSP → space
+        if ($v instanceof \DateTimeInterface)
+            return $v->format('Y-m-d');
+        if ($v === null)
+            return '';
+        $s = str_replace("\xC2\xA0", ' ', (string) $v); // NBSP → space
         $s = preg_replace('/\s+/u', ' ', $s);
         return trim($s);
     }
@@ -307,9 +351,9 @@ class ExcelZonesProvider
     {
         $agg = [];
         foreach ($rows as $r) {
-            $code = (string)$r['zone'];
-            $agg[$code]['zone_count']  = ($agg[$code]['zone_count']  ?? 0) + (int)$r['markets_count'];
-            $agg[$code]['repeat_count'] = ($agg[$code]['repeat_count'] ?? 0) + (int)$r['zone_repeats'];
+            $code = (string) $r['zone'];
+            $agg[$code]['zone_count'] = ($agg[$code]['zone_count'] ?? 0) + (int) $r['markets_count'];
+            $agg[$code]['repeat_count'] = ($agg[$code]['repeat_count'] ?? 0) + (int) $r['zone_repeats'];
         }
         return $agg;
     }

@@ -44,29 +44,29 @@ class ChecklistEdit extends Component
 
     public function render()
     {
-        if($this->checklist->canEdit()){
+        if ($this->checklist->canEdit()) {
 
-        $employees = Employee::query()
-            ->active()
-            ->where('user_id', Auth::id())
-            ->when($this->employeeSearch !== '', function ($q) {
-                $s = $this->employeeSearch;
-                $q->where(function ($qq) use ($s) {
-                    $qq->where('first_name', 'like', "%{$s}%")
-                       ->orWhere('last_name',  'like', "%{$s}%")
-                       ->orWhere('code',       'like', "%{$s}%");
-                });
-            })
-            ->orderBy('first_name')
-            ->orderBy('last_name')
-            ->limit(8)
-            ->get(['id','first_name','last_name','code']);
+            $employees = Employee::query()
+                ->active()
+                ->where('user_id', Auth::id())
+                ->when($this->employeeSearch !== '', function ($q) {
+                    $s = $this->employeeSearch;
+                    $q->where(function ($qq) use ($s) {
+                        $qq->where('first_name', 'like', "%{$s}%")
+                            ->orWhere('last_name', 'like', "%{$s}%")
+                            ->orWhere('code', 'like', "%{$s}%");
+                    });
+                })
+                ->orderBy('first_name')
+                ->orderBy('last_name')
+                ->limit(8)
+                ->get(['id', 'first_name', 'last_name', 'code']);
 
-        return view('livewire.checklist.checklist-edit', [
-            'employees' => $employees,
-        ]);
-    }
-    return redirect()->back();
+            return view('livewire.checklist.checklist-edit', [
+                'employees' => $employees,
+            ]);
+        }
+        return redirect()->back();
     }
 
     protected function rules(): array
@@ -75,11 +75,11 @@ class ChecklistEdit extends Component
             'employee_id' => [
                 'required',
                 Rule::exists('employees', 'id')->where(
-                    fn ($q) => $q->where('user_id', Auth::id())
+                    fn($q) => $q->where('user_id', Auth::id())
                 ),
             ],
             // File is optional on edit
-            'file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:20480'], // 20 MB
+            'file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:2480'], 
         ];
     }
 
@@ -92,74 +92,74 @@ class ChecklistEdit extends Component
 
     public function chooseEmployee(int $id, string $label): void
     {
-        $this->employee_id   = $id;
+        $this->employee_id = $id;
         $this->employeeSearch = $label;
         $this->resetErrorBag('employee_id');
     }
 
-    
+
     public function update(ExcelZonesProvider $provider): void
-{
-    $this->validate();
+    {
+        $this->validate();
 
-    // Ensure manager owns this employee
-    $employee = Employee::select('id','user_id')->findOrFail($this->employee_id);
-    Gate::authorize('upload-checklist-for-employee', $employee);
+        // Ensure manager owns this employee
+        $employee = Employee::select('id', 'user_id')->findOrFail($this->employee_id);
+        Gate::authorize('upload-checklist-for-employee', $employee);
 
-    if ($this->file) {
-        // 1) Validate Excel content using temp path
-        try {
-            $provider->validate($this->file->getRealPath(), 'Data');
-        } catch (ValidationException $e) {
-            $this->addError('file', collect($e->errors())->flatten()->join(' '));
-            return;
-        }
-
-        $disk = Storage::disk('public');
-        $dir  = 'checklists'; // <— single flat directory (no new nested dirs)
-
-        // Try to reuse the old filename if it exists; otherwise build a safe one
-        $oldRel    = $this->checklist->filename;
-        $reuseName = $oldRel ? basename($oldRel) : null;
-
-        if ($reuseName) {
-            $target = $reuseName; // e.g. keep "employee-visits.xlsx"
-        } else {
-            $orig = $this->file->getClientOriginalName();
-            $base = Str::slug(pathinfo($orig, PATHINFO_FILENAME)) ?: 'checklist';
-            $ext  = strtolower($this->file->getClientOriginalExtension() ?: 'xlsx');
-            $target = "{$base}.{$ext}";
-
-            // ensure unique if needed
-            $i = 1;
-            while ($disk->exists("$dir/$target")) {
-                $target = "{$base}-{$i}.{$ext}";
-                $i++;
+        if ($this->file) {
+            // 1) Validate Excel content using temp path
+            try {
+                $provider->validate($this->file->getRealPath(), 'Data');
+            } catch (ValidationException $e) {
+                $this->addError('file', collect($e->errors())->flatten()->join(' '));
+                return;
             }
+
+            $disk = Storage::disk('public');
+            $dir = 'checklists'; // <— single flat directory (no new nested dirs)
+
+            // Try to reuse the old filename if it exists; otherwise build a safe one
+            $oldRel = $this->checklist->filename;
+            $reuseName = $oldRel ? basename($oldRel) : null;
+
+            if ($reuseName) {
+                $target = $reuseName; // e.g. keep "employee-visits.xlsx"
+            } else {
+                $orig = $this->file->getClientOriginalName();
+                $base = Str::slug(pathinfo($orig, PATHINFO_FILENAME)) ?: 'checklist';
+                $ext = strtolower($this->file->getClientOriginalExtension() ?: 'xlsx');
+                $target = "{$base}.{$ext}";
+
+                // ensure unique if needed
+                $i = 1;
+                while ($disk->exists("$dir/$target")) {
+                    $target = "{$base}-{$i}.{$ext}";
+                    $i++;
+                }
+            }
+
+            // 2) Store new file first (so we don't lose data if store fails)
+            $newPath = $this->file->storeAs($dir, $target, 'public'); // "checklists/filename.xlsx"
+
+            // 3) Delete the previous file (if any and different path)
+            if ($oldRel && $oldRel !== $newPath) {
+                $disk->delete($oldRel);
+            }
+
+            // 4) Update model path
+            $this->checklist->filename = $newPath;
         }
 
-        // 2) Store new file first (so we don't lose data if store fails)
-        $newPath = $this->file->storeAs($dir, $target, 'public'); // "checklists/filename.xlsx"
+        // Update employee relation
+        $this->checklist->employee_id = $employee->id;
+        $this->checklist->save();
 
-        // 3) Delete the previous file (if any and different path)
-        if ($oldRel && $oldRel !== $newPath) {
-            $disk->delete($oldRel);
-        }
+        // Reset only the file field
+        $this->reset('file');
+        $this->resetValidation();
 
-        // 4) Update model path
-        $this->checklist->filename = $newPath;
+        $this->dispatch('toast', type: 'success', message: 'Checklist updated.');
+        $this->dispatch('checklists:updated');
     }
-
-    // Update employee relation
-    $this->checklist->employee_id = $employee->id;
-    $this->checklist->save();
-
-    // Reset only the file field
-    $this->reset('file');
-    $this->resetValidation();
-
-    $this->dispatch('toast', type: 'success', message: 'Checklist updated.');
-    $this->dispatch('checklists:updated');
-}
 
 }

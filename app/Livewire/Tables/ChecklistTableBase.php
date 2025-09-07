@@ -4,19 +4,38 @@ declare(strict_types=1);
 namespace App\Livewire\Tables;
 
 use Illuminate\Database\Eloquent\Builder;
-
+use App\Services\ExcelZonesProvider;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 abstract class ChecklistTableBase extends DataTable
 {
-    
+
     abstract protected function baseQuery(): Builder;
 
     /** CHILD MAY override for custom rules per role */
-    protected function canEditRow($row): bool      { return false; }
-    protected function canDeleteRow($row): bool    { return false; }
-    protected function canApproveRow($row): bool   { return false; }
-    protected function canRejectRow($row): bool    { return false; }
-    protected function canCloseRow($row): bool     { return false; }
+    protected function canEditRow($row): bool
+    {
+        return false;
+    }
+    protected function canDeleteRow($row): bool
+    {
+        return false;
+    }
+    protected function canApproveRow($row): bool
+    {
+        return false;
+    }
+    protected function canRejectRow($row): bool
+    {
+        return false;
+    }
+    protected function canCloseRow($row): bool
+    {
+        return false;
+    }
 
+
+    // close function change state to pending ans also insert validated rows to database
 
     public function close(int $id): void
     {
@@ -26,15 +45,43 @@ abstract class ChecklistTableBase extends DataTable
             session()->flash('error', 'You cannot close this checklist.');
             return;
         }
-
         if ($row->status !== 'open') {
             session()->flash('error', 'Only OPEN checklists can be closed.');
             return;
         }
 
-        $row->status = 'pending';
-        $row->save();
-        session()->flash('ok', 'Checklist moved to PENDING.');
+        
+        try {
+            /** @var ExcelZonesProvider $svc */
+            $svc = app(ExcelZonesProvider::class);
+
+            // Pass what you store in DB (relative like "checklists/..") — resolver is fixed below.
+            $result = $svc->process((string) $row->filename, (int) $row->id, 'Data');
+
+            $row->status = 'pending';
+            $row->save();
+
+            $inserted = (int) ($result['inserted'] ?? 0);
+            session()->flash('ok', "");
+            $this->dispatch('toast', type: 'success', message: "Checklist moved to PENDING. Imported {$inserted} zone rows.");
+
+            // (optional) refresh the table
+            $this->dispatch('checklists:updated');
+
+        } catch (ValidationException $e) {
+            // Collect field-based errors from provider
+            $msg = collect($e->errors())->flatten()->join(' ');
+
+            $this->dispatch('toast', type: 'error', message: $msg ?: 'Validation failed while processing the Excel file.');
+
+            return;
+
+        } catch (Throwable $e) {
+            report($e);
+            $this->dispatch('toast', type: 'error', message: 'Processing failed: ' . $e->getMessage());
+
+            return;
+        }
     }
 
     public function approve(int $id): void
@@ -98,17 +145,18 @@ abstract class ChecklistTableBase extends DataTable
 
         // 1) Eager-load relations referenced in field/filter_on/search_on
         $with = $this->relationsFromColumns($cols);
-        if (!empty($with)) $query->with($with);
+        if (!empty($with))
+            $query->with($with);
 
         // 2) Global search
         if ($this->q !== '') {
             $needle = trim($this->q);
-            $lower  = mb_strtolower($needle);
+            $lower = mb_strtolower($needle);
             $searchables = array_values(array_filter($cols, fn($c) => $c['searchable'] ?? true));
 
             $query->where(function (Builder $sub) use ($searchables, $needle, $lower) {
                 foreach ($searchables as $c) {
-                    $targets = (array)($c['search_on'] ?? [$c['field']]);
+                    $targets = (array) ($c['search_on'] ?? [$c['field']]);
                     foreach ($targets as $target) {
                         if ($rc = $this->parseRelationField($target)) {
                             [$relation, $column] = $rc;
@@ -122,10 +170,10 @@ abstract class ChecklistTableBase extends DataTable
                             } elseif ($type === 'number' && is_numeric($needle)) {
                                 $sub->orWhere($target, (int) $needle);
                             } elseif ($type === 'boolean') {
-                                if (in_array($lower, ['1','true','yes','active','enabled','on','فعال'], true)) {
+                                if (in_array($lower, ['1', 'true', 'yes', 'active', 'enabled', 'on', 'فعال'], true)) {
                                     $sub->orWhere($target, 1);
                                 }
-                                if (in_array($lower, ['0','false','no','inactive','disabled','off','غير فعال'], true)) {
+                                if (in_array($lower, ['0', 'false', 'no', 'inactive', 'disabled', 'off', 'غير فعال'], true)) {
                                     $sub->orWhere($target, 0);
                                 }
                             } elseif ($type === 'date') {
@@ -141,16 +189,18 @@ abstract class ChecklistTableBase extends DataTable
 
         // 3) Column filters
         foreach ($cols as $c) {
-            $type    = $c['type'] ?? 'text';
+            $type = $c['type'] ?? 'text';
             $filterT = $c['filter'] ?? $this->defaultFilterForType($type);
 
             $bindKey = $this->filterBindingKey($c);
-            if (!array_key_exists($bindKey, $this->filters)) continue;
+            if (!array_key_exists($bindKey, $this->filters))
+                continue;
 
             $val = $this->filters[$bindKey];
-            if ($val === '' || $val === null) continue;
+            if ($val === '' || $val === null)
+                continue;
 
-            $filterOn = (array)($c['filter_on'] ?? $c['field']);
+            $filterOn = (array) ($c['filter_on'] ?? $c['field']);
 
             if ($filterT === 'text') {
                 $query->where(function (Builder $w) use ($filterOn, $val) {
@@ -169,7 +219,7 @@ abstract class ChecklistTableBase extends DataTable
                 foreach ($filterOn as $target) {
                     if ($rc = $this->parseRelationField($target)) {
                         [$relation, $column] = $rc;
-                        $query->whereHas($relation, fn (Builder $q) => $q->where($column, $val));
+                        $query->whereHas($relation, fn(Builder $q) => $q->where($column, $val));
                     } else {
                         $query->where($target, $val);
                     }
@@ -179,7 +229,7 @@ abstract class ChecklistTableBase extends DataTable
                 foreach ($filterOn as $target) {
                     if ($rc = $this->parseRelationField($target)) {
                         [$relation, $column] = $rc;
-                        $query->whereHas($relation, fn (Builder $q) => $q->where($column, $bool));
+                        $query->whereHas($relation, fn(Builder $q) => $q->where($column, $bool));
                     } else {
                         $query->where($target, $bool);
                     }
@@ -187,9 +237,11 @@ abstract class ChecklistTableBase extends DataTable
             } elseif ($filterT === 'date_range') {
                 $field = $c['field'];
                 $from = \Illuminate\Support\Arr::get($val, 'from');
-                $to   = \Illuminate\Support\Arr::get($val, 'to');
-                if ($from) $query->whereDate($field, '>=', $from);
-                if ($to)   $query->whereDate($field, '<=', $to);
+                $to = \Illuminate\Support\Arr::get($val, 'to');
+                if ($from)
+                    $query->whereDate($field, '>=', $from);
+                if ($to)
+                    $query->whereDate($field, '<=', $to);
             }
         }
 
@@ -218,8 +270,8 @@ abstract class ChecklistTableBase extends DataTable
 
         return view('livewire.tables.checklist-table-base', [
             'columns' => $this->columns(),
-            'rows'    => $rows,
-            'title'   => $this->title ?: class_basename($this->modelClass()),
+            'rows' => $rows,
+            'title' => $this->title ?: class_basename($this->modelClass()),
         ]);
     }
 }

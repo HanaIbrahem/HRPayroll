@@ -20,10 +20,11 @@
 
         <div class="flex flex-wrap items-center gap-2">
             <a wire:navigate href="{{ route('checklist') }}" class="btn btn-ghost btn-sm">Back</a>
-          
+
             @if ($checklist->canEdit())
-            <a wire:navigate href="{{ route('checklist.edit', $checklist->id) }}" class="btn btn-secondary btn-sm">Edit</a>
-                
+            <a wire:navigate href="{{ route('checklist.edit', $checklist->id) }}"
+                class="btn btn-secondary btn-sm">Edit</a>
+
             @endif
 
             {{-- Sheet picker --}}
@@ -35,9 +36,10 @@
             </select>
 
             @if ($this->excelPath)
-                <a href="{{ \Illuminate\Support\Facades\Storage::url($this->excelPath) }}" target="_blank" class="btn btn-outline btn-sm">
-                    Download Excel
-                </a>
+            <a href="{{ \Illuminate\Support\Facades\Storage::url($this->excelPath) }}" target="_blank"
+                class="btn btn-outline btn-sm">
+                Download Excel
+            </a>
             @endif
         </div>
     </div>
@@ -56,7 +58,9 @@
                         </div>
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Status</dt>
-                            <dd class="col-span-2"><x-status :status="$checklist->status" /></dd>
+                            <dd class="col-span-2">
+                                <x-status :status="$checklist->status" />
+                            </dd>
                         </div>
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Code</dt>
@@ -74,6 +78,70 @@
                 </div>
             </div>
 
+            @if ($checklist->status !== 'open')
+            <div class="card bg-base-100 border border-base-300/60">
+                <div class="card-body p-0">
+                    <div class="px-4 pt-4">
+                        <h2 class="card-title text-base">Visited Zones</h2>
+                    </div>
+
+                    <div class="overflow-x-auto w-full">
+                        <table class="table table-sm table-zebra w-full">
+                            <thead class="bg-base-200 top-0 z-10">
+                                <tr>
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70">#</th>
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70">Code</th>
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70 text-right">Zone
+                                        Count</th>
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70 text-right">Repeat
+                                        Zone</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm">
+                                @forelse ($checklist->visitedZones as $i => $vz)
+                                <tr>
+                                    <td class="px-3 py-2 text-base-content/70">{{ $i + 1 }}</td>
+                                    <td class="px-3 py-2">
+                                        {{ data_get($vz, 'zone.code', '—') }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right">
+                                        {{ number_format((int)$vz->zone_count) }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right">
+                                        {{ number_format((int)$vz->repeat_count) }}
+                                    </td>
+                                </tr>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="px-3 py-4 text-center text-base-content/60">
+                                        No visited zones.
+                                    </td>
+                                </tr>
+                                @endforelse
+                            </tbody>
+
+                            @if ($checklist->visitedZones->isNotEmpty())
+                            <tfoot>
+                                <tr class="bg-base-200/60">
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70" colspan="2">Totals
+                                    </th>
+                                    <th class="px-3 py-2 text-right">
+                                        {{ number_format($checklist->visitedZones->sum('zone_count')) }}
+                                    </th>
+                                    <th class="px-3 py-2 text-right">
+                                        {{ number_format($checklist->visitedZones->sum('repeat_count')) }}
+                                    </th>
+                                </tr>
+                            </tfoot>
+                            @endif
+                        </table>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+
+
             <div class="card bg-base-100 border border-base-300/60">
                 <div class="card-body">
                     <h2 class="card-title text-base">Notes</h2>
@@ -87,30 +155,30 @@
 
     {{-- NEW ROW: Excel preview (full width, below the grid) --}}
     @if ($this->excelPath)
-        <div class="w-full">
-            <div class="card bg-base-100 border border-base-300/60">
-                <div class="card-body">
-                    <div class="flex items-center justify-between gap-3">
-                        <h2 class="card-title text-base">Excel Preview</h2>
-                        <div class="text-xs text-base-content/60 truncate">
-                            <span class="opacity-70">File:</span>
-                            <code class="truncate">{{ $this->excelPath }}</code>
-                            <span class="mx-2">·</span>
-                            <span class="opacity-70">Sheet:</span>
-                            <code>{{ $sheet ?: '—' }}</code>
-                        </div>
+    <div class="w-full">
+        <div class="card bg-base-100 border border-base-300/60">
+            <div class="card-body">
+                <div class="flex items-center justify-between gap-3">
+                    <h2 class="card-title text-base">Excel Preview</h2>
+                    <div class="text-xs text-base-content/60 truncate">
+                        <span class="opacity-70">File:</span>
+                        <code class="truncate">{{ $this->excelPath }}</code>
+                        <span class="mx-2">·</span>
+                        <span class="opacity-70">Sheet:</span>
+                        <code>{{ $sheet ?: '—' }}</code>
                     </div>
-
-                    @if ($sheet)
-                        {{-- Use kebab-case props and the selected sheet --}}
-                        <x-excel.preview :file-path="$checklist->filename" :sheet="$sheet" :max-rows="500" class="mt-3" />
-                    @else
-                        <div class="alert alert-ghost mt-3">
-                            Select a sheet from the dropdown to preview.
-                        </div>
-                    @endif
                 </div>
+
+                @if ($sheet)
+                {{-- Use kebab-case props and the selected sheet --}}
+                <x-excel.preview :file-path="$checklist->filename" :sheet="$sheet" :max-rows="500" class="mt-3" />
+                @else
+                <div class="alert alert-ghost mt-3">
+                    Select a sheet from the dropdown to preview.
+                </div>
+                @endif
             </div>
         </div>
+    </div>
     @endif
 </div>

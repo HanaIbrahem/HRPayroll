@@ -85,11 +85,18 @@
         </div>
       </div>
 
-      {{-- Submit --}}
-      <div class="md:col-span-12">
-        <x-form.button class="btn-primary btn-block" type="submit">
-          Save
-        </x-form.button>
+      {{-- Submit --}} 
+      <div class="w-50">
+        <button type="submit"
+            class="btn btn-primary btn-block"
+            wire:loading.attr="disabled"
+            wire:target="save">
+      <span wire:loading.remove wire:target="save">Save</span>
+      <span wire:loading wire:target="save" class="inline-flex items-center gap-2">
+        <span class="loading loading-spinner loading-xs"></span>
+        Validating & saving…
+      </span>
+    </button>
       </div>
     </form>
   </x-form.container>
