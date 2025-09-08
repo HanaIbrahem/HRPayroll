@@ -30,9 +30,7 @@
                placeholder="EMP-00001" />
       </x-form.field>
 
-      {{-- Manager (typable select) --}}
-      
-         <x-form.field class="md:col-span-6" title="Manager" for="user_id" required>
+      <x-form.field class="md:col-span-6" title="Manager" for="user_id" required>
         <div x-data="{ open:false }" x-cloak @click.outside="open=false" @keydown.escape.window="open=false" class="relative">
           <input type="text" id="managerSearch" name="managerSearch"
                  wire:model.live.debounce.300ms="managerSearch"
@@ -64,9 +62,44 @@
         </div>
       </x-form.field>
 
+      <x-form.field class="md:col-span-6" title="Location" for="location_id" required>
+        <div x-data="{ open:false }" x-cloak @click.outside="open=false" @keydown.escape.window="open=false" class="relative">
+          <input type="text"
+                 wire:model.live.debounce.300ms="locationSearch"
+                 @focus="open=true" autocomplete="off"
+                 class="input input-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none @error('location_id') input-error border-error @enderror"
+                 placeholder="Type to search locations...">
+          <input type="hidden" wire:model="location_id">
+
+          <div x-show="open" x-transition
+               class="absolute z-20 mt-1 w-full rounded-xl border border-base-300 bg-base-100 shadow"
+               style="display:none;">
+            @if($locationSearch === '')
+              <div class="p-2 text-sm text-base-content/60">Start typing...</div>
+            @elseif($locationResults->isEmpty())
+              <div class="p-2 text-sm text-base-content/60">No matches</div>
+            @else
+              <ul class="menu menu-sm">
+                @foreach($locationResults as $loc)
+                  @php $label = $loc->name ?? ''; @endphp
+                  <li wire:key="loc-{{ $loc->id }}">
+                    <button type="button" @click="$wire.chooseLocation({{ $loc->id }}, @js($label)); open=false">
+                      {{ $label }}
+                    </button>
+                  </li>
+                @endforeach
+              </ul>
+            @endif
+          </div>
+        </div>
+      </x-form.field>
+
       <div class="md:col-span-12">
-        <x-form.button class="btn-primary btn-block" type="submit">
-          Update
+        <x-form.button class="btn-primary btn-block" type="submit" wire:loading.attr="disabled" wire:target="save">
+          <span wire:loading.remove wire:target="save">Update</span>
+          <span wire:loading wire:target="save" class="inline-flex items-center gap-2">
+            <span class="loading loading-spinner loading-xs"></span> Saving…
+          </span>
         </x-form.button>
       </div>
     </form>

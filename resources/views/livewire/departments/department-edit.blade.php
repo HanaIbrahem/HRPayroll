@@ -10,9 +10,15 @@
                     placeholder="e.g., IT, Finance, HR" />
             </x-form.field>
 
-            <x-form.button>
-                Update
-            </x-form.button>
+            <div class="md:col-span-12">
+        <x-form.button class="btn-primary btn-block" type="submit" wire:loading.attr="disabled" wire:target="save">
+          <span wire:loading.remove wire:target="save">Update</span>
+          <span wire:loading wire:target="save" class="inline-flex items-center gap-2">
+            <span class="loading loading-spinner loading-xs"></span> Saving…
+          </span>
+        </x-form.button>
+      </div>
+            
         </form>
     </x-form.container>
 

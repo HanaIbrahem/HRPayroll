@@ -17,7 +17,7 @@ class DepartmentComponent extends Component
     protected function rules(): array
     {
         return [
-            'departmentname' => ['required','string','min:2','max:150'],
+            'departmentname' => ['required','string','min:4','max:50'],
         ];
     }
 
@@ -30,6 +30,6 @@ class DepartmentComponent extends Component
 
         $this->reset();
         $this->resetValidation();
-        $this->dispatch('toast', type: 'success', message: 'Department saved.');
+        $this->dispatch('toast', type: 'success', message: 'Department Created.');
     }
 }

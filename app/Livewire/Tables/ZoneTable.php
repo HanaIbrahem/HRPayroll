@@ -25,6 +25,7 @@ class ZoneTable extends DataTable
             ['field' => 'between_zone', 'label' => 'Between (IQD)', 'type' => 'number', 'searchable' => true, 'sortable' => true, 'filter' => 'text'],
             ['field' => 'description', 'label' => 'Description', 'type' => 'text', 'searchable' => true, 'sortable' => false, 'filter' => 'text','width'=> 'min-w-[20rem]'],
             ['field' => 'is_active', 'label' => 'Status', 'type' => 'boolean', 'searchable' => true, 'sortable' => false, 'filter' => 'boolean','options'    => [1 => 'Active', 0 => 'Inactive'],'stutus'=>true],          
+            ['field' => 'updated_at', 'label' => 'Updated', 'type' => 'date', 'searchable' => false, 'sortable' => true, 'filter' => 'none', 'format' => 'Y-m-d'],
             ['field' => 'created_at', 'label' => 'Created', 'type' => 'date', 'searchable' => false, 'sortable' => true, 'filter' => 'none', 'format' => 'Y-m-d'],
         ];
     }

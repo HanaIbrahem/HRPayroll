@@ -13,6 +13,8 @@ use App\Livewire\Departments\DepartmentComponent;
 use App\Livewire\Departments\DepartmentEdit;
 use App\Livewire\Employee\EmployeeComponent;
 use App\Livewire\Employee\EmployeeEdit;
+use App\Livewire\Location\LocationComponent;
+use App\Livewire\Location\LocationEdit;
 use App\Livewire\Zone\ZoneComponent;
 use App\Livewire\Zone\ZoneEdit;
 use App\Livewire\Checklist\CkecklistShow;
@@ -21,7 +23,7 @@ use App\Livewire\Checklist\CkecklistShow;
 use Illuminate\Support\Facades\Route;
 
 
-
+// shaired route 
 Route::middleware(['auth','role:manager,hr,admin'])->group(function () {
 
     Route::get('/', Dashboard::class)->name('dashboard');
@@ -44,6 +46,11 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('/users',UserComponent::class)->name('user');
     Route::get('/uses/edit/{user}',UserEdit::class)->name('user.edit');
 
+    // employee location routes 
+    Route::get('/locations',LocationComponent::class)->name('location');
+    Route::get('/location/edit/{location}',LocationEdit::class)->name('location.edit');
+
+
 });
 
 // manager routes 
@@ -55,45 +62,45 @@ Route::middleware(['auth','role:manager'])->group(function () {
     Route::get('/checklist/edit/{checklist}', ChecklistEdit::class)->name('checklist.edit');
     Route::get('/checklist/{checklist}', CkecklistShow::class)->name('checklist.show');
 
-        Route::get('/checklists/{checklist}/file', function (Checklist $checklist) {
-        // Only owner can view (adjust authorization as needed)
-        abort_unless(auth()->id() === $checklist->user_id, 403);
+    //     Route::get('/checklists/{checklist}/file', function (Checklist $checklist) {
+    //     // Only owner can view (adjust authorization as needed)
+    //     abort_unless(auth()->id() === $checklist->user_id, 403);
 
-        // Resolve absolute path from DB 'filename'
-        $abs = (function (string $f) {
-            $f = ltrim($f, '/\\');
+    //     // Resolve absolute path from DB 'filename'
+    //     $abs = (function (string $f) {
+    //         $f = ltrim($f, '/\\');
 
-            $candidates = [
-                // storage paths
-                storage_path("app/$f"),
-                storage_path("app/public/$f"),
-                // public paths (if you put files under /public/... manually)
-                public_path($f),
-                public_path("uploads/$f"),
-            ];
+    //         $candidates = [
+    //             // storage paths
+    //             storage_path("app/$f"),
+    //             storage_path("app/public/$f"),
+    //             // public paths (if you put files under /public/... manually)
+    //             public_path($f),
+    //             public_path("uploads/$f"),
+    //         ];
 
-            foreach ($candidates as $p) {
-                if (is_file($p)) return $p;
-            }
-            return null;
-        })((string) $checklist->filename);
+    //         foreach ($candidates as $p) {
+    //             if (is_file($p)) return $p;
+    //         }
+    //         return null;
+    //     })((string) $checklist->filename);
 
-        abort_unless($abs && is_readable($abs), 404, 'File not found');
+    //     abort_unless($abs && is_readable($abs), 404, 'File not found');
 
-        // Guess MIME; default to Excel if unknown
-        $mime = (function ($path) {
-            if (function_exists('mime_content_type')) {
-                $mt = @mime_content_type($path);
-                if ($mt) return $mt;
-            }
-            return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-        })($abs);
+    //     // Guess MIME; default to Excel if unknown
+    //     $mime = (function ($path) {
+    //         if (function_exists('mime_content_type')) {
+    //             $mt = @mime_content_type($path);
+    //             if ($mt) return $mt;
+    //         }
+    //         return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    //     })($abs);
 
-        return response()->file($abs, [
-            'Content-Type'        => $mime,
-            'Content-Disposition' => 'inline; filename="'.basename($abs).'"',
-        ]);
-    })->name('checklists.file');
+    //     return response()->file($abs, [
+    //         'Content-Type'        => $mime,
+    //         'Content-Disposition' => 'inline; filename="'.basename($abs).'"',
+    //     ]);
+    // })->name('checklists.file');
 
 });
 

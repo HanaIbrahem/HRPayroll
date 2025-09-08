@@ -69,7 +69,6 @@
             @endif
           </div>
         </div>
-        <x-form.errors for="department_id" />
       </x-form.field>
 
       <div class="md:col-span-12">

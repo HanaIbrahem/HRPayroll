@@ -17,9 +17,9 @@ return new class extends Migration
             $table->integer('fixed_rate')->nullable();
             $table->integer('between_zone')->nullable();
             $table->string('code',20);
-            $table->string('from_zone',20);
-            $table->string('to_zone',20);
-            $table->text('description');
+            $table->string('from_zone',30);
+            $table->string('to_zone',30);
+            $table->text('description')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->index(['from_zone', 'to_zone']);

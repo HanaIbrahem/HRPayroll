@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
            
             $table->id();
-
-            $table->string('first_name', 50);
-            $table->string('last_name', 50);
-
+            $table->string('first_name', 30);
+            $table->string('last_name', 30);
             // FKs
             $table->foreignIdFor(Department::class)
                   ->constrained()
@@ -29,10 +27,10 @@ return new class extends Migration
                   ->cascadeOnUpdate()
                   ->restrictOnDelete();
 
-            $table->string('position', 100);
+            $table->string('position', 50);
 
-            // Unique code per employee
-            $table->string('code', 50)->unique();
+            // Unique code per employee like fingerprint
+            $table->string('code', 30)->unique();
 
             $table->boolean('is_active')->default(true);
 

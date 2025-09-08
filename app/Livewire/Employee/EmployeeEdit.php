@@ -6,8 +6,8 @@ use Livewire\Component;
 use App\Models\Employee;
 use App\Models\User;
 use App\Models\Department;
+use App\Models\Location;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 
 class EmployeeEdit extends Component
 {
@@ -18,10 +18,15 @@ class EmployeeEdit extends Component
     public ?string $position      = '';
     public ?string $code          = '';
 
-    public ?int    $department_id = null; // derived from manager
-    public ?int    $user_id       = null; // manager id
+    // get it from managers departmant id
+    public ?int    $department_id = null; 
+    public ?int    $user_id       = null; 
     public string  $managerSearch = '';
 
+    public ?int    $location_id   = null;
+    public string  $locationSearch = '';
+
+    // when created component we init form values
     public function mount(Employee $employee): void
     {
         $this->employee      = $employee;
@@ -35,18 +40,20 @@ class EmployeeEdit extends Component
 
         $mgr = $employee->user;
         $this->managerSearch = $mgr ? trim(($mgr->first_name ?? '').' '.($mgr->last_name ?? '')) : '';
+
+        $this->location_id    = $employee->location_id;
+        $this->locationSearch = optional($employee->location)->name ?? '';
     }
 
     protected function rules(): array
     {
         return [
-            'first_name' => ['required','string','min:2','max:100'],
-            'last_name'  => ['required','string','min:2','max:100'],
-            'position'   => ['nullable','string','max:150'],
-            'code'       => ['nullable','string','max:50', Rule::unique('employees','code')->ignore($this->employee->id)],
+            'first_name' => ['required','string','min:3','max:30'],
+            'last_name'  => ['required','string','min:3','max:30'],
+            'position'   => ['required','string','min:2','max:50'],
+            'code'       => ['required','string','max:30', Rule::unique('employees','code')->ignore($this->employee->id)],
             'user_id'    => [
                 'required',
-                // user is active AND belongs to an active department
                 Rule::exists('users','id')->where(function ($q) {
                     $q->where('is_active', true)
                       ->whereNotNull('department_id')
@@ -58,6 +65,10 @@ class EmployeeEdit extends Component
                       });
                 }),
             ],
+            'location_id' => [
+                'required',
+                Rule::exists('locations', 'id')->where('is_active', true),
+            ],
         ];
     }
 
@@ -66,10 +77,22 @@ class EmployeeEdit extends Component
         if ($this->user_id) {
             $u = User::find($this->user_id);
             $current = $u ? trim(($u->first_name ?? '').' '.($u->last_name ?? '')) : null;
-            if ($current !== $value) {
+            if (mb_strtolower((string)$current) !== mb_strtolower(trim((string)$value))) {
                 $this->user_id = null;
                 $this->department_id = null;
                 $this->resetErrorBag('user_id');
+            }
+        }
+    }
+
+    public function updatedLocationSearch($value): void
+    {
+        if ($this->location_id) {
+            $lo = Location::find($this->location_id);
+            $current = $lo?->name;
+            if (mb_strtolower((string)$current) !== mb_strtolower(trim((string)$value))) {
+                $this->location_id = null;
+                $this->resetErrorBag('location_id');
             }
         }
     }
@@ -89,6 +112,13 @@ class EmployeeEdit extends Component
         } else {
             $this->resetErrorBag('user_id');
         }
+    }
+
+    public function chooseLocation(int $id, string $name): void
+    {
+        $this->location_id    = $id;
+        $this->locationSearch = $name;
+        $this->resetErrorBag('location_id');
     }
 
     public function save(): void
@@ -111,6 +141,7 @@ class EmployeeEdit extends Component
             'code'          => $this->code,
             'user_id'       => $this->user_id,
             'department_id' => $dept->id,
+            'location_id'   => $this->location_id,
         ]);
 
         $this->department_id = $dept->id;
@@ -125,7 +156,6 @@ class EmployeeEdit extends Component
             ->where('is_active', true)
             ->where('role','manager')
             ->whereNotNull('department_id')
-            // Only managers whose department is active
             ->whereExists(function ($s) {
                 $s->selectRaw('1')
                   ->from('departments')
@@ -145,6 +175,16 @@ class EmployeeEdit extends Component
             ->limit(8)
             ->get(['id','first_name','last_name']);
 
-        return view('livewire.employee.employee-edit', compact('managerResults'));
+        $locationResults = Location::query()
+            // ->where('is_active', true) // uncomment if you have this column
+            ->when($this->locationSearch !== '', function ($q) {
+                $s = mb_strtolower(trim($this->locationSearch));
+                $q->whereRaw('LOWER(name) LIKE ?', ["%{$s}%"]);
+            })
+            ->orderBy('name')
+            ->limit(8)
+            ->get(['id','name']);
+
+        return view('livewire.employee.employee-edit', compact('managerResults','locationResults'));
     }
 }

@@ -33,6 +33,15 @@ class DepartmentTable extends DataTable
                 'options'    => [1 => 'Active', 0 => 'Inactive'],
                 'status'     => true,     // <- mark as the status field (replaces 'toggleable')
             ],
+                 [
+                'field'      => 'updated_at',
+                'label'      => 'Updated',
+                'type'       => 'date',
+                'searchable' => false,
+                'sortable'   => true,
+                'filter'     => 'none',
+                'format'     => 'Y-m-d',
+            ],
             [
                 'field'  => 'created_at',
                 'label'  => 'Created',

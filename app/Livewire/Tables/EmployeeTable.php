@@ -47,30 +47,38 @@ class EmployeeTable extends DataTable
                 'sortable'   => true,
                 'filter'     => 'text',
             ],
-
-            // Department (belongsTo)
             [
                 'field'      => 'department.name',
                 'label'      => 'Department',
                 'type'       => 'text',
-                'searchable' => true,                   // global search
-                'search_on'  => ['department.name'],    // explicit target
-                'sortable'   => true,                   // sort via subquery
+                'searchable' => true,                   
+                'search_on'  => ['department.name'],    
+                'sortable'   => true,                   
                 'filter'     => 'text',
-                'filter_key' => 'department',           // Livewire-safe key
-                'filter_on'  => ['department.name'],    // column filter target(s)
+                'filter_key' => 'department',           
+                'filter_on'  => ['department.name'],    
             ],
 
-            // Manager (belongsTo user) — display first name; search/filter across first+last
+               [
+                'field'      => 'location.name',
+                'label'      => 'Location',
+                'type'       => 'text',
+                'searchable' => true,                  
+                'search_on'  => ['location.name'],    
+                'sortable'   => true,                   
+                'filter'     => 'text',
+                'filter_key' => 'location',          
+                'filter_on'  => ['location.name'],   
+            ],
             [
                 'field'      => 'user.first_name',
                 'label'      => 'Manager',
                 'type'       => 'text',
                 'searchable' => true,
                 'search_on'  => ['user.first_name','user.last_name'],
-                'sortable'   => true,                   // sort by first_name
+                'sortable'   => true,                   
                 'filter'     => 'text',
-                'filter_key' => 'manager',              // Livewire-safe key
+                'filter_key' => 'manager',              
                 'filter_on'  => ['user.first_name','user.last_name'],
             ],
 

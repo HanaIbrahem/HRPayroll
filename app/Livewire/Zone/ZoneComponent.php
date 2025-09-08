@@ -17,19 +17,24 @@ class ZoneComponent extends Component
     protected function rules(): array
     {
         return [
-            'from_zone'     => ['required','string','max:20'],
-            'to_zone'       => ['required','string','max:20'],
+            'from_zone'     => ['required','string','max:30'],
+            'to_zone'       => ['required','string','max:30'],
             'code'          => ['required','string','max:20'],
             'km'            => ['nullable','numeric','min:0'],
             'fixed_rate'    => ['nullable','integer','min:0'],
             'between_zone'  => ['nullable','integer','min:0'],
-            'description'   => ['required','string','max:2000'],
+            'description'   => ['nullable','string','max:2000'],
         ];
     }
 
     public function save(): void
     {
         $data = $this->validate();
+        if ($this->km=='' && $this->fixed_rate=='') {
+            $this->addError('km', 'KM or Fixd_Rate one if them required ');
+            $this->addError('fixed_rate', 'KM or Fixd_Rate one if them required ');
+            return;
+        }
         Zone::create($data);
 
         // reset + toast + notify any listening table

@@ -18,7 +18,7 @@ class DepartmentEdit extends Component
 
     protected function rules(): array
     {
-        return ['name' => ['required','string','min:2','max:150']];
+        return ['name' => ['required','string','min:4','max:50']];
     }
 
     public function save(): void

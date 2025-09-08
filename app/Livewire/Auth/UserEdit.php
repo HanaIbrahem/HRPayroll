@@ -84,7 +84,7 @@ class UserEdit extends Component
     public function save(): void
     {
         $this->normalize();
-        $data = $this->validate();
+        $this->validate();
 
         // Build the update payload
         $payload = [

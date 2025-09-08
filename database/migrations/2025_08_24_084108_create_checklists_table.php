@@ -17,18 +17,26 @@ return new class extends Migration
                 ->constrained('users')
                 ->restrictOnDelete(); 
 
+            $table->foreignId('approved_by')
+                  ->nullable()
+                  ->constrained('users')
+                  ->nullOnDelete();
+
             $table->foreignId('employee_id')
                 ->constrained('employees')
                 ->restrictOnDelete();
 
             // File
             $table->string('filename');
+            $table->text('note')->nullable();
+            $table->text('hr_note')->nullable();
 
             // Status
             $table->enum('status', ['open','pending','approved','rejected'])
                 ->default('open')
                 ->index();
 
+            $table->timestamp('approved_at')->nullable();
             $table->timestamps();
         });
     }

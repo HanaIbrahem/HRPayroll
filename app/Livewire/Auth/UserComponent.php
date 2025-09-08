@@ -33,8 +33,8 @@ class UserComponent extends Component
                 Rule::unique('users', 'username'),
             ],
             'user_role'     => ['required', Rule::in($this->roleOptions)],
-            'department_id' => ['nullable','exists:departments,id'],
-            'password'      => ['required','string','min:8','confirmed'],
+            'department_id' => ['required','exists:departments,id'],
+            'password'      => ['required','string','min:8','max:30','confirmed'],
         ];
     }
 
@@ -69,7 +69,7 @@ class UserComponent extends Component
     public function save(): void
     {
         $this->normalize();
-       $data    = $this->validate();
+        $this->validate();
 
         User::create([
             'first_name'    => $this->fname,

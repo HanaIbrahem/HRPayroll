@@ -5,22 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Department extends Model
+class Location extends Model
 {
-    /** @use HasFactory<\Database\Factories\DepartmentFactory> */
+    /** @use HasFactory<\Database\Factories\LocationFactory> */
     use HasFactory;
-    protected $guarded=[];
+     protected $guarded=[];
 
     public function employees()
     {
         return $this->hasMany(Employee::class);
     }
-
-    public function users()
-    {
-        return $this->hasMany(User::class);
-    }
-     // return only acive rows
     public function scopeActive($q)
     {
         return $q->where('is_active', true);

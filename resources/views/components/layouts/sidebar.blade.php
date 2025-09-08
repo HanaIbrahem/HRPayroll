@@ -27,10 +27,10 @@
           </span>
         </x-nav.link>
 
-        {{-- administrtor routes  --}}
+        {{-- administrtor routes --}}
 
         @if (auth()->user()->isRole('admin'))
-          <p class="px-3 pt-3 text-[11px] font-semibold uppercase text-base-content/60">Manage</p>
+        <p class="px-3 pt-3 text-[11px] font-semibold uppercase text-base-content/60">Manage</p>
 
         <x-nav.link route="department" match="department.*" class="mb-1">
           <span class="inline-flex items-center gap-2">
@@ -60,6 +60,19 @@
           </span>
         </x-nav.link>
 
+        <x-nav.link route="location" match="location.*" class="mb-1">
+          <span class="inline-flex items-center gap-2">
+            {{-- location (map pin) --}}
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 20.25l-5.25-2.25V6.75L9 9m0 11.25l6-2.25m-6 2.25V9m6 11.25L20.25 18V6.75L15 9m0 11.25V9M15 9l-6-2.25M9 6.75L15 9" />
+            </svg>
+
+            <span>Location</span>
+          </span>
+        </x-nav.link>
+
         <x-nav.link route="zone" match="zone.*" class="mb-1">
           <span class="inline-flex items-center gap-2">
             {{-- Zone (map pin) --}}
@@ -84,11 +97,11 @@
           </span>
         </x-nav.link>
         @endif
-        
 
-       {{-- mnager routes --}}
+
+        {{-- mnager routes --}}
         @if (auth()->user()->isRole('manager'))
-           <x-nav.group title="Checklist" match="checklist.*" class="mb-1">
+        <x-nav.group title="Checklist" match="checklist.*" class="mb-1">
 
           <x-slot:icon>
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -126,7 +139,7 @@
         </x-nav.group>
         @endif
 
-        {{-- HR  routes --}}
+        {{-- HR routes --}}
 
         @if (auth()->user()->isRole('hr'))
 
