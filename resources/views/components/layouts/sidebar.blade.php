@@ -143,6 +143,17 @@
 
         @if (auth()->user()->isRole('hr'))
 
+        <x-nav.link route="hr.pending" match="hr.*" class="mb-1">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"
+              stroke-width="1.5">
+              <path d="M7 3h10M7 21h10M7 3c0 4 5 6 5 9s-5 5-5 9M17 3c0 4-5 6-5 9s5 5 5 9" />
+            </svg>
+            <span>Pending</span>
+          </span>
+        </x-nav.link>
+
+
         @endif
 
       </nav>

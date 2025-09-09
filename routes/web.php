@@ -13,8 +13,10 @@ use App\Livewire\Departments\DepartmentComponent;
 use App\Livewire\Departments\DepartmentEdit;
 use App\Livewire\Employee\EmployeeComponent;
 use App\Livewire\Employee\EmployeeEdit;
+use App\Livewire\Hr\ChecklistShow;
 use App\Livewire\Location\LocationComponent;
 use App\Livewire\Location\LocationEdit;
+use App\Livewire\Pending\PendingComponent;
 use App\Livewire\Zone\ZoneComponent;
 use App\Livewire\Zone\ZoneEdit;
 use App\Livewire\Checklist\CkecklistShow;
@@ -107,6 +109,9 @@ Route::middleware(['auth','role:manager'])->group(function () {
 
 // hr routes
 Route::middleware(['auth','role:hr'])->group(function () {
+
+    Route::get('/pending', PendingComponent::class)->name('hr.pending');
+    Route::get('/checklist/show/{checklist}', ChecklistShow::class)->name('hr.show');
 
 
 });

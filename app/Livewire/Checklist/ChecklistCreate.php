@@ -19,6 +19,7 @@ class ChecklistCreate extends Component
     /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
     public $file;
 
+    public $note='';
     public function render()
     {
         $employees = Employee::query()
@@ -96,10 +97,11 @@ class ChecklistCreate extends Component
             'employee_id' => $employee->id,
             'filename' => $path,
             'status' => 'open',
+            'note'=>$this->note
         ]);
 
         // Reset form
-        $this->reset(['employee_id', 'employeeSearch', 'file']);
+        $this->reset(['employee_id', 'employeeSearch','note', 'file']);
         $this->resetValidation();
 
         // Toast + optional table refresh

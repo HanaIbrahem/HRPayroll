@@ -57,6 +57,10 @@ class User extends Authenticatable
     {
         return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
     }
+    public function getFullnameAttribute(): string
+    {
+        return trim(($this->first_name ?? '') . ' ' . ($this->last_name ?? ''));
+    }
      // return only acive rows
     public function scopeActive($q)
     {

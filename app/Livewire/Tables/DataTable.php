@@ -9,7 +9,6 @@ use Illuminate\Support\Arr;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
-use Box\Spout\Common\Entity\Row as SpoutRow;
 
 abstract class DataTable extends Component
 {

@@ -54,6 +54,12 @@
 
       </x-form.field>
 
+        <x-form.field class="md:col-span-12" title="Note" for="note" required>
+                <textarea id="description" name="note" rows="3" wire:model.debounce.300ms="note"
+                    class="textarea textarea-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none @error('description') textarea-error border-error @enderror"
+                    placeholder="Short note..."></textarea>
+            </x-form.field>
+
       {{-- Live Preview --}}
       <div class="md:col-span-12">
         <div class="rounded-xl border border-base-300 p-4 bg-base-100">
@@ -75,6 +81,12 @@
                 @else
                 —
                 @endif
+              </div>
+            </div>
+            <div>
+              <div class="font-semibold">Note</div>
+              <div class="text-base-content/70">
+                {{ $note ? $note : '—' }}
               </div>
             </div>
             <div>

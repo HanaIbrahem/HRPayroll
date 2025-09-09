@@ -10,26 +10,30 @@ class CkecklistShow extends Component
 {
     public Checklist $checklist;
 
-    public $sheet='';
+    public $sheet = '';
     public $path;
 
     // If user changes the <select wire:model="sheets"> value, mirror it into $sheet
-public function updatedSheet($value): void
-{
-    $this->sheet = $value ?: null;
-
-}
-
-
-
-    public function mount( Checklist $checklist)
+    public function updatedSheet($value): void
     {
-       
-        $this->checklist->load(['employee']);
-        
+        $this->sheet = $value ?: null;
 
     }
-    
+
+
+
+    public function mount(Checklist $checklist)
+    {
+
+
+
+        $this->checklist = $checklist->load([
+            'employee.location',
+            'user.department',
+            'visitedZones.zone',
+        ]);
+    }
+
     public function getExcelPathProperty(): ?string
     {
         // adapt to your column name(s):
@@ -44,7 +48,8 @@ public function updatedSheet($value): void
 
     public function downloadExcel()
     {
-        if (!$this->filename) return;
+        if (!$this->filename)
+            return;
 
         // If file is in storage/app/... and you have a private disk, you can stream it.
         // If it's public, you can also just link to Storage::url().
@@ -55,5 +60,5 @@ public function updatedSheet($value): void
     {
         return view('livewire.checklist.ckecklist-show');
     }
-    
+
 }

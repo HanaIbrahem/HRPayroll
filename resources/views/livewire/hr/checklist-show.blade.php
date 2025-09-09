@@ -19,21 +19,10 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <a wire:navigate href="{{ route('checklist') }}" class="btn btn-ghost btn-sm">Back</a>
 
-            @if ($checklist->canEdit())
-            <a wire:navigate href="{{ route('checklist.edit', $checklist->id) }}"
-                class="btn btn-secondary btn-sm">Edit</a>
+            
 
-            @endif
-
-            {{-- Sheet picker --}}
-            <select class=" select-sm" wire:model.live.debounce="sheet" title="Choose sheet to preview">
-                <option value="" disabled selected>Choose sheet to preview…</option>
-
-                <option value="main">Main</option>
-                <option value="Data">Data</option>
-            </select>
+           
 
             @if ($this->excelPath)
             <a href="{{ \Illuminate\Support\Facades\Storage::url($this->excelPath) }}" target="_blank"
@@ -41,6 +30,8 @@
                 Download Excel
             </a>
             @endif
+             <button wire:click="exportPdf" class="btn btn-primary btn-sm">PDF Report</button>
+      <button wire:click="exportXlsx" class="btn btn-success btn-sm">Excel Report</button>
         </div>
     </div>
 
@@ -56,12 +47,7 @@
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee</dt>
                             <dd class="col-span-2 text-sm">{{ data_get($checklist, 'employee.fullname') ?? '—' }}</dd>
                         </div>
-                        <div class="py-2 grid grid-cols-3 gap-2">
-                            <dt class="text-xs uppercase tracking-wide text-base-content/60">Status</dt>
-                            <dd class="col-span-2">
-                                <x-status :status="$checklist->status" />
-                            </dd>
-                        </div>
+                       
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Code</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->employee->code ?? '—' }}</dd>
@@ -69,6 +55,14 @@
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Location</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->employee->location->name ?? '—' }}</dd>
+                        </div>
+                         <div class="py-2 grid grid-cols-3 gap-2">
+                            <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Manager</dt>
+                            <dd class="col-span-2 text-sm">{{ $checklist->user->fullname ?? '—' }}</dd>
+                        </div>
+                          <div class="py-2 grid grid-cols-3 gap-2">
+                            <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Department</dt>
+                            <dd class="col-span-2 text-sm">{{ $checklist->employee->department->name ?? '—' }}</dd>
                         </div>
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Created</dt>
@@ -78,7 +72,21 @@
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Updated</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->updated_at?->format('Y-m-d H:i') }}</dd>
                         </div>
+                         <div class="py-2 grid grid-cols-3 gap-2">
+                            <dt class="text-xs uppercase tracking-wide text-base-content/60">Status</dt>
+                            <dd class="col-span-2">
+                                <x-status :status="$checklist->status" />
+                            </dd>
+                        </div>
                     </dl>
+                </div>
+            </div>
+             <div class="card bg-base-100 border border-base-300/60">
+                <div class="card-body">
+                    <h2 class="card-title text-base">Notes</h2>
+                    <p class="text-sm leading-6 text-base-content/80">
+                        {{ $checklist->note ?? '—' }}
+                    </p>
                 </div>
             </div>
 
@@ -154,62 +162,9 @@
 
 
 
-            <div class="card bg-base-100 border border-base-300/60">
-                <div class="card-body">
-                    <h2 class="card-title text-base">Notes</h2>
-                    <p class="text-sm leading-6 text-base-content/80">
-                        {{ $checklist->note ?? '—' }}
-                    </p>
-                </div>
-            </div>
+           
         </div>
     </div>
 
-    {{-- NEW ROW: Excel preview (full width, below the grid) --}}
-    @if ($this->excelPath)
-
-    <div class="w-full">
-        <div class="card bg-base-100 border border-base-300/60">
-            <div class="card-body">
-                <div class="flex items-center justify-between gap-3">
-                    <h2 class="card-title text-base">Excel Preview</h2>
-                    <div class="text-xs text-base-content/60 truncate">
-                        <span class="opacity-70">File:</span>
-                        <code class="truncate">{{ $this->excelPath }}</code>
-                        <span class="mx-2">·</span>
-                        <span class="opacity-70">Sheet:</span>
-                        <code>{{ $sheet ?: '—' }}</code>
-                    </div>
-                </div>
-
-                @if ($sheet)
-                {{-- Scrollable preview area --}}
-                <div class="mt-3 rounded-xl border border-base-300/60">
-                    <div class="excel-scroll max-h-[60vh] overflow-x-auto overflow-y-auto">
-                        <div class="min-w-full">
-                            <x-excel.preview :file-path="$checklist->filename" :sheet="$sheet" :max-rows="500" />
-                        </div>
-                    </div>
-                </div>
-                @else
-                <div class="alert alert-ghost mt-3">
-                    Select a sheet from the dropdown to preview.
-                </div>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    {{-- Optional: sticky header for tables inside the preview --}}
-    <style>
-        .excel-scroll thead th {
-            position: sticky;
-            top: 0;
-            background: hsl(var(--b1));
-            /* DaisyUI base background */
-            z-index: 1;
-        }
-    </style>
-
-    @endif
+  
 </div>

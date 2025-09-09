@@ -26,47 +26,50 @@ class ChecklistEdit extends Component
     /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
     public $file; // optional replacement
 
+    public string $note = '';
+
     public function mount(Checklist $checklist): void
     {
-        // If you have a policy on Checklist, you can uncomment this:
         // Gate::authorize('update', $checklist);
 
         $this->checklist = $checklist->load('employee');
 
-        // Prefill employee fields
+        // Prefill employee
         $this->employee_id = $checklist->employee_id;
-        $emp = $checklist->employee;
-        if ($emp) {
+        if ($emp = $checklist->employee) {
             $label = trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? ''));
             $this->employeeSearch = $emp->code ? "{$label} ({$emp->code})" : $label;
         }
+
+        // Prefill note
+        $this->note = (string) ($checklist->note ?? '');
     }
 
     public function render()
     {
-        if ($this->checklist->canEdit()) {
-
-            $employees = Employee::query()
-                ->active()
-                ->where('user_id', Auth::id())
-                ->when($this->employeeSearch !== '', function ($q) {
-                    $s = $this->employeeSearch;
-                    $q->where(function ($qq) use ($s) {
-                        $qq->where('first_name', 'like', "%{$s}%")
-                            ->orWhere('last_name', 'like', "%{$s}%")
-                            ->orWhere('code', 'like', "%{$s}%");
-                    });
-                })
-                ->orderBy('first_name')
-                ->orderBy('last_name')
-                ->limit(8)
-                ->get(['id', 'first_name', 'last_name', 'code']);
-
-            return view('livewire.checklist.checklist-edit', [
-                'employees' => $employees,
-            ]);
+        if (! $this->checklist->canEdit()) {
+            return redirect()->back();
         }
-        return redirect()->back();
+
+        $employees = Employee::query()
+            ->active()
+            ->where('user_id', Auth::id())
+            ->when($this->employeeSearch !== '', function ($q) {
+                $s = $this->employeeSearch;
+                $q->where(function ($qq) use ($s) {
+                    $qq->where('first_name', 'like', "%{$s}%")
+                       ->orWhere('last_name', 'like', "%{$s}%")
+                       ->orWhere('code', 'like', "%{$s}%");
+                });
+            })
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->limit(8)
+            ->get(['id', 'first_name', 'last_name', 'code']);
+
+        return view('livewire.checklist.checklist-edit', [
+            'employees' => $employees,
+        ]);
     }
 
     protected function rules(): array
@@ -79,13 +82,14 @@ class ChecklistEdit extends Component
                 ),
             ],
             // File is optional on edit
-            'file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:2480'], 
+            'file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:2480'],
+            'note' => ['required', 'string', 'max:500'],
         ];
     }
 
     public function updated($prop): void
     {
-        if (in_array($prop, ['employee_id', 'file'], true)) {
+        if (in_array($prop, ['employee_id', 'file', 'note'], true)) {
             $this->validateOnly($prop);
         }
     }
@@ -96,7 +100,6 @@ class ChecklistEdit extends Component
         $this->employeeSearch = $label;
         $this->resetErrorBag('employee_id');
     }
-
 
     public function update(ExcelZonesProvider $provider): void
     {
@@ -116,21 +119,18 @@ class ChecklistEdit extends Component
             }
 
             $disk = Storage::disk('public');
-            $dir = 'checklists'; // <— single flat directory (no new nested dirs)
+            $dir  = 'checklists';
 
-            // Try to reuse the old filename if it exists; otherwise build a safe one
-            $oldRel = $this->checklist->filename;
+            $oldRel    = $this->checklist->filename;
             $reuseName = $oldRel ? basename($oldRel) : null;
 
             if ($reuseName) {
-                $target = $reuseName; // e.g. keep "employee-visits.xlsx"
+                $target = $reuseName;
             } else {
                 $orig = $this->file->getClientOriginalName();
                 $base = Str::slug(pathinfo($orig, PATHINFO_FILENAME)) ?: 'checklist';
-                $ext = strtolower($this->file->getClientOriginalExtension() ?: 'xlsx');
+                $ext  = strtolower($this->file->getClientOriginalExtension() ?: 'xlsx');
                 $target = "{$base}.{$ext}";
-
-                // ensure unique if needed
                 $i = 1;
                 while ($disk->exists("$dir/$target")) {
                     $target = "{$base}-{$i}.{$ext}";
@@ -138,10 +138,10 @@ class ChecklistEdit extends Component
                 }
             }
 
-            // 2) Store new file first (so we don't lose data if store fails)
+            // 2) Store new file first
             $newPath = $this->file->storeAs($dir, $target, 'public'); // "checklists/filename.xlsx"
 
-            // 3) Delete the previous file (if any and different path)
+            // 3) Delete the previous file if path changed
             if ($oldRel && $oldRel !== $newPath) {
                 $disk->delete($oldRel);
             }
@@ -150,8 +150,9 @@ class ChecklistEdit extends Component
             $this->checklist->filename = $newPath;
         }
 
-        // Update employee relation
+        // Update employee + note
         $this->checklist->employee_id = $employee->id;
+        $this->checklist->note        = $this->note;
         $this->checklist->save();
 
         // Reset only the file field
@@ -161,5 +162,4 @@ class ChecklistEdit extends Component
         $this->dispatch('toast', type: 'success', message: 'Checklist updated.');
         $this->dispatch('checklists:updated');
     }
-
 }

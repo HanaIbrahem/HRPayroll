@@ -1,18 +1,134 @@
 <?php
-declare(strict_types=1);
 
 namespace App\Livewire\Tables;
 
+use App\Models\Checklist;
 use Illuminate\Database\Eloquent\Builder;
-use App\Services\ExcelZonesProvider;
-use Illuminate\Validation\ValidationException;
-use Throwable;
-abstract class ChecklistTableBase extends DataTable
+use Livewire\WithPagination;
+
+class PendingTable extends DataTable
 {
+     
 
-    abstract protected function baseQuery(): Builder;
+     
+    public string $title = 'Pending ';
 
-    /** CHILD MAY override for custom rules per role */
+   public array $dateFields = [
+        'created_at' => 'Created at',
+        'updated_at' => 'Updated at',
+    ];
+    public string $dateField = 'created_at';
+
+    /** UI: from/to (YYYY-MM-DD) */
+    public ?string $dateFrom = null;
+    public ?string $dateTo   = null;
+    protected $queryString = [
+        'q'          => ['except' => ''],
+        'sortField'  => ['except' => 'id'],
+        'sortDirection' => ['except' => 'asc'],
+        'perPage'    => ['except' => 10],
+     
+    ];
+
+   
+
+    public function updatedDateField(): void   { $this->resetPage(); }
+    public function updatedDateFrom(): void    { $this->resetPage(); }
+    public function updatedDateTo(): void      { $this->resetPage(); }
+
+  
+ 
+
+    protected function modelClass(): string
+    {
+        return Checklist::class;
+    }
+
+    protected function baseQuery(): Builder
+    {
+        $q = Checklist::query()->where('status','pending');
+        return $q;
+    }
+
+    protected function columns(): array
+    {
+        return [
+            [
+                'field'      => 'employee.fullname',
+                'label'      => 'Employee Name',
+                'search_on'  => ['employee.first_name', 'employee.last_name'],
+                'filter_on'  => ['employee.first_name', 'employee.last_name'],
+                'sortable'   => false,
+                'sort_on'    => 'employee.first_name',
+                'hide_sm'    => false,
+                'filter'      => 'text',
+
+            ],
+             [
+                'field'      => 'employee.code',
+                'label'      => 'Employee code',
+                'search_on'  => ['employee.code'],
+                'filter_on'  => ['employee.code'],
+                'sortable'   => false,
+                'sort_on'    => 'employee.code',
+                'hide_sm'    => false,
+                'filter'      => 'text',
+
+            ],
+              [
+                'field'      => 'user.department.name',
+                'label'      => 'Department',
+                'search_on'  => ['user.department.name'],
+                'filter_on'  => ['user.department.name'],
+                'sortable'   => false,
+                'sort_on'    => 'user.department.name',
+                'hide_sm'    => false,
+                'filter'      => 'text',
+
+            ],
+             [
+                'field'      => 'employee.location.name',
+                'label'      => 'Location',
+                'search_on'  => ['employee.location.name'],
+                'filter_on'  => ['employee.location.name'],
+                'sortable'   => false,
+                'sort_on'    => 'employee.location.name',
+                'hide_sm'    => true,
+                'filter'      => 'text',
+
+            ],
+              [
+                'field'      => 'user.fullname',
+                'label'      => 'Manager Name',
+                'search_on'  => ['user.first_name', 'user.last_name'],
+                'filter_on'  => ['user.first_name', 'user.last_name'],
+                'sortable'   => false,
+                'sort_on'    => 'user.first_name',
+                'hide_sm'    => true,
+                'filter'      => 'text',
+
+            ],
+            [
+                'field'       => 'status',
+                'label'       => 'Status',
+                'type'        => 'text',
+                'hide_sm'     => true,
+            ],
+            [
+                'field'   => 'created_at',
+                'label'   => 'Uploaded',
+                'type'    => 'date',
+                'format'  => 'Y-m-d',
+                'sortable'=> true,
+                'hide_sm' => true,
+            ],
+        ];
+    }
+
+    protected function canApproveRow($row): bool   { return $row->status === 'pending'; }
+    protected function canRejectRow($row): bool  { return $row->status === 'pending'; }
+
+    
     protected function canEditRow($row): bool
     {
         return false;
@@ -21,82 +137,57 @@ abstract class ChecklistTableBase extends DataTable
     {
         return false;
     }
-    protected function canApproveRow($row): bool
-    {
-        return false;
-    }
-    protected function canRejectRow($row): bool
-    {
-        return false;
-    }
+  
     protected function canCloseRow($row): bool
     {
         return false;
     }
 
 
-    // close function change state to pending ans also insert validated rows to database
 
-    public function close(int $id): void
+   
+
+    public function approve(int $id): void
     {
         $row = $this->baseQuery()->findOrFail($id);
 
-        if (!$this->canCloseRow($row)) {
-            session()->flash('error', 'You cannot close this checklist.');
-            return;
-        }
-        if ($row->status !== 'open') {
-            session()->flash('error', 'Only OPEN checklists can be closed.');
+        if (!$this->canApproveRow($row)) {
+             $this->dispatch('toast', type: 'error', message: 'You cannot approve this checklist.');
             return;
         }
 
-        
-        try {
-            /** @var ExcelZonesProvider $svc */
-            $svc = app(ExcelZonesProvider::class);
-
-            // Pass what you store in DB (relative like "checklists/..") — resolver is fixed below.
-            $result = $svc->process((string) $row->filename, (int) $row->id, 'Data');
-
-            $row->status = 'pending';
-            $row->save();
-
-            $inserted = (int) ($result['inserted'] ?? 0);
-            session()->flash('ok', "");
-            $this->dispatch('toast', type: 'success', message: "Checklist moved to PENDING. Imported {$inserted} zone rows.");
-
-            // (optional) refresh the table
-            $this->dispatch('checklists:updated');
-
-        } catch (ValidationException $e) {
-            // Collect field-based errors from provider
-            $msg = collect($e->errors())->flatten()->join(' ');
-
-            $this->dispatch('toast', type: 'error', message: $msg ?: 'Validation failed while processing the Excel file.');
-
-            return;
-
-        } catch (Throwable $e) {
-            report($e);
-            $this->dispatch('toast', type: 'error', message: 'Processing failed: ' . $e->getMessage());
-
-            return;
-        }
-    }  
-
-    public function delete(int $id): void
-    {
-        $row = $this->baseQuery()->findOrFail($id);
-
-        if (!$this->canDeleteRow($row)) {
-            $this->dispatch('toast', type: 'error', message: 'You cannot delete this checklist.');
+        if ($row->status !== 'pending') {
+            $this->dispatch('toast', type: 'error', message: 'Only PENDING checklists can be approved.');
             return;
         }
 
-        $row->delete();
-        $this->dispatch('toast', type: 'success', message:  'Checklist deleted.');
-        $this->resetPage();
+        $row->status = 'approved';
+        $row->save();
+        $this->dispatch('toast', type: 'success', message: 'Checklist APPROVED.');
     }
+
+    public function reject(int $id): void
+    {
+
+ 
+        $row = $this->baseQuery()->findOrFail($id);
+
+        if (!$this->canRejectRow($row)) {
+            $this->dispatch('toast', type: 'error', message: 'You cannot reject this checklist.');
+            return;
+        }
+
+        if (!in_array($row->status, ['open', 'pending', 'approved', 'rejected'], true)) {
+            $this->dispatch('toast', type: 'error', message:  'Invalid state.');
+            return;
+        }
+
+        $row->status = 'rejected';
+        $row->save();
+        $this->dispatch('toast', type: 'success', message: 'Checklist REJECTED.');
+    }
+
+
 
     protected function buildQuery(): Builder
     {
@@ -230,10 +321,11 @@ abstract class ChecklistTableBase extends DataTable
     {
         $rows = $this->buildQuery()->paginate($this->perPage);
 
-        return view('livewire.tables.checklist-table-base', [
+        return view('livewire.tables.pending-table', [
             'columns' => $this->columns(),
             'rows' => $rows,
             'title' => $this->title ?: class_basename($this->modelClass()),
         ]);
     }
+
 }
