@@ -22,9 +22,13 @@ class Checklist extends Model
     
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'user_id');
     }
 
+    public function approver(): BelongsTo 
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
@@ -35,7 +39,7 @@ class Checklist extends Model
         return $this->hasMany(VisitedZone::class);
     }
 
-     public function canEdit(): bool
+    public function canEdit(): bool
     {
         return $this->status === self::STATUS_OPEN;
     }

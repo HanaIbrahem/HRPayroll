@@ -35,7 +35,11 @@ return new class extends Migration
             $table->enum('status', ['open','pending','approved','rejected'])
                 ->default('open')
                 ->index();
-
+            $table->unsignedBigInteger('calculated_cost')->default(0); 
+          
+            // date columns 
+            $table->date('start_date')->nullable();
+            $table->date('end_date')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->timestamps();
         });

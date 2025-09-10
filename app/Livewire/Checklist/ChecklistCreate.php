@@ -11,6 +11,8 @@ use App\Models\Checklist;
 use App\Models\Employee;
 use App\Services\ExcelZonesProvider;
 use Livewire\WithFileUploads;
+use Carbon\Carbon;
+
 class ChecklistCreate extends Component
 {
     use WithFileUploads;
@@ -20,6 +22,14 @@ class ChecklistCreate extends Component
     public $file;
 
     public $note='';
+     public ?string $start_date = null; 
+    public ?string $end_date   = null; 
+
+    public function mount(): void
+    {
+        $this->start_date ??= Carbon::now()->startOfMonth()->toDateString();
+        $this->end_date   ??= Carbon::now()->toDateString();
+    }
     public function render()
     {
         $employees = Employee::query()
@@ -55,13 +65,17 @@ class ChecklistCreate extends Component
                     fn($q) => $q->where('user_id', Auth::id())
                 ),
             ],
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2480'], // 2 MB
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:2480'],
+            'start_date'  => ['required', 'date', 'before_or_equal:end_date'],
+            'end_date'    => ['required', 'date', 'after_or_equal:start_date'],
+            'note'        => ['nullable', 'string','max:500'],
+       
         ];
     }
 
     public function updated($prop): void
     {
-        if (in_array($prop, ['employee_id', 'file'], true)) {
+        if (in_array($prop, ['employee_id', 'file' ,'start_date', 'end_date'], true)) {
             $this->validateOnly($prop);
         }
     }
@@ -97,11 +111,17 @@ class ChecklistCreate extends Component
             'employee_id' => $employee->id,
             'filename' => $path,
             'status' => 'open',
+            'start_date'  => $this->start_date,
+            'end_date'    => $this->end_date,
             'note'=>$this->note
         ]);
 
         // Reset form
         $this->reset(['employee_id', 'employeeSearch','note', 'file']);
+         // Re-apply default dates after reset
+        $this->start_date = Carbon::now()->startOfMonth()->toDateString();
+        $this->end_date   = Carbon::now()->toDateString();
+
         $this->resetValidation();
 
         // Toast + optional table refresh

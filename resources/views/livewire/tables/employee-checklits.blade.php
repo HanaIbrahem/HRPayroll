@@ -1,8 +1,5 @@
 <div class="space-y-4">
     <!-- Toolbar -->
-
-
-
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <h2 class="text-2xl font-semibold tracking-tight">{{ $title }}</h2>
 
@@ -30,7 +27,7 @@
             </div>
         </div>
     </div>
-    {{--
+
     <div class="flex items-center gap-2">
         <select class="select select-bordered select-sm" wire:model.live="dateField" title="Filter by which timestamp">
             @foreach ($dateFields as $key => $label)
@@ -46,7 +43,7 @@
 
 
         </button>
-    </div> --}}
+    </div>
     <div class="card bg-base-100 border border-base-300/60">
         <div class="card-body p-0">
             <div class="overflow-x-auto w-full">
@@ -142,10 +139,7 @@
                     </thead>
 
                     @forelse ($rows as $r)
-                    @php
-                    $canApprove = method_exists($this, 'canApproveRow') ? $this->canApproveRow($r) : false;
-                    $canReject = method_exists($this, 'canRejectRow') ? $this->canRejectRow($r) : false;
-                    @endphp
+              
 
                     <!-- One tbody per row (stable scopes) -->
                     <tbody x-data="{ open:false }" wire:key="row-{{ $r->id }}" class="text-sm">
@@ -195,53 +189,14 @@
                             <td class="px-3 py-2 whitespace-nowrap hidden sm:table-cell">
                                 <div class="flex items-center justify-end gap-1">
                                     <!-- View (link) -->
-                                    <a wire:navigate href="{{ route('hr.show', $r->id) }}" class="btn btn-ghost btn-xs"
-                                        title="View">
+                                    <a wire:navigate href="{{ route('hr.show', $r->id) }}"
+                                        class="btn btn-ghost btn-xs" title="View">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
                                             fill="currentColor">
                                             <path
                                                 d="M12 5C4.367 5 1 12 1 12s3.367 7 11 7 11-7 11-7-3.367-7-11-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
                                         </svg>
-                                    </a>
-
-                                    {{-- reject --}}
-                                    <button
-                                        class="btn btn-error btn-xs {{ $canReject ? '' : 'pointer-events-none opacity-40' }}"
-                                        title="Reject"
-                                        @click.prevent="if({{ $canReject ? 'true' : 'false' }}) $wire.reject({{ $r->id }})">
-
-                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                                            aria-hidden="true">
-                                            <circle cx="12" cy="12" r="9"></circle>
-                                            <path d="M9 9l6 6M15 9l-6 6"></path>
-                                        </svg>
-
-                                    </button>
-                                        <!-- Approve  -->
-
-                                    <button
-                                        class="btn btn-success btn-xs {{ $canApprove ? '' : 'pointer-events-none opacity-40' }}"
-                                        title="Approve" wire:click="approve({{ $r->id }})" wire:loading.attr="disabled"
-                                        wire:target="approve({{ $r->id }})">
-                                        <!-- normal icon -->
-                                        <span wire:loading.remove wire:target="approve({{ $r->id }})">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                                                aria-hidden="true">
-                                                <circle cx="12" cy="12" r="9"></circle>
-                                                <path d="M8.5 12.5l2.3 2.3 4.4-4.9"></path>
-                                            </svg>
-                                        </span>
-
-                                        <!-- loading state -->
-                                        <span class="inline-flex items-center gap-1" wire:loading
-                                            wire:target="approve({{ $r->id }})">
-                                            <span class="loading loading-spinner loading-xs"></span>
-                                            Approving…
-                                        </span>
-                                    </button>
-
+                                    </a>                                   
                                 </div>
                             </td>
                         </tr>
@@ -275,7 +230,7 @@
                                     </dl>
 
                                     <div class="mt-3 flex flex-wrap gap-1">
-                                        <a wire:navigate href="{{ route('hr.show', $r->id) }}"
+                                        <a wire:navigate href="{{ route('checklist.show', $r->id) }}"
                                             class="btn btn-ghost btn-xs" title="View">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
                                                 fill="currentColor">
@@ -283,41 +238,8 @@
                                                     d="M12 5C4.367 5 1 12 1 12s3.367 7 11 7 11-7 11-7-3.367-7-11-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
                                             </svg>
                                         </a>
-                                     
-                                        {{-- reject button --}}
-                                        <button
-                                            class="btn btn-error btn-xs {{ $canReject ? '' : 'pointer-events-none opacity-40' }}"
-                                            title="Reject"
-                                            @click.prevent="if({{ $canReject ? 'true' : 'false' }}) $wire.reject({{ $r->id }})">
-
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"
-                                                aria-hidden="true">
-                                                <circle cx="12" cy="12" r="9"></circle>
-                                                <path d="M7.5 7.5l9 9"></path>
-                                            </svg>
-
-                                        </button>
-                                           {{-- approve --}}
-                                        <button
-                                            class="btn btn-success btn-xs {{ $canApprove ? '' : 'pointer-events-none opacity-40' }}"
-                                            title="Approve" wire:click="approve({{ $r->id }})"
-                                            wire:loading.attr="disabled" wire:target="approve({{ $r->id }})">
-                                            <span wire:loading.remove wire:target="approve({{ $r->id }})">
-                                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-                                                    stroke-linejoin="round" aria-hidden="true">
-                                                    <circle cx="12" cy="12" r="9"></circle>
-                                                    <path d="M8.5 12.5l2.3 2.3 4.4-4.9"></path>
-                                                </svg>
-                                            </span>
-                                            <span class="inline-flex items-center gap-1" wire:loading
-                                                wire:target="approve({{ $r->id }})">
-                                                <span class="loading loading-spinner loading-xs"></span>
-                                                Approving…
-                                            </span>
-                                        </button>
-
+                                    
+            
                                     </div>
                                 </div>
                             </td>

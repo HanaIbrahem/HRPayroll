@@ -27,6 +27,7 @@ class UserFactory extends Factory
             'first_name' => fake()->name(),
             'last_name' => fake()->name(),
             'username' => fake()->unique()->userName(),
+            'role'=> $this->faker->randomElement(['manager','hr']),
             'department_id' => Department::factory(),
             'password' => static::$password ??= Hash::make('12345'),
             'remember_token' => Str::random(10),

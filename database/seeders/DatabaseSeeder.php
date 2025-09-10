@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         // Zone::factory(count: 100)->create();
         // User::factory(20)->create();
         // Location::factory(5)->create();
-        // Employee::factory(100)->create();
+        Employee::factory(10)->create();
 
         Checklist::factory( 50)->create();
         // User::factory()->create(attributes: [
@@ -31,6 +31,18 @@ class DatabaseSeeder extends Seeder
         //     'last_name' => 'admin',
         //     'username' => 'admin',
         //     'role'=>'admin'
+        // ]);
+        // User::factory()->create(attributes: [
+        //     'first_name' => 'hr',
+        //     'last_name' => 'hr',
+        //     'username' => 'hr',
+        //     'role'=>'hr'
+        // ]);
+        //   User::factory()->create(attributes: [
+        //     'first_name' => 'manager',
+        //     'last_name' => 'manager',
+        //     'username' => 'manager',
+        //     'role'=>'manager'
         // ]);
     }
 }

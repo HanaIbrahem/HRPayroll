@@ -70,6 +70,14 @@
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Location</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->employee->location->name ?? '—' }}</dd>
                         </div>
+                          <div class="py-2 grid grid-cols-3 gap-2">
+                            <dt class="text-xs uppercase tracking-wide text-base-content/60">Start Date</dt>
+                            <dd class="col-span-2 text-sm">{{ $checklist->start_date }}</dd>
+                        </div>
+                          <div class="py-2 grid grid-cols-3 gap-2">
+                            <dt class="text-xs uppercase tracking-wide text-base-content/60">End Date</dt>
+                            <dd class="col-span-2 text-sm">{{ $checklist->end_date }}</dd>
+                        </div>
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Created</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->created_at?->format('Y-m-d H:i') }}</dd>

@@ -20,12 +20,17 @@ class ChecklistTable extends ChecklistTableBase
     public array $dateFields = [
         'created_at' => 'Created at',
         'updated_at' => 'Updated at',
+        'start_date' => 'From Date',
+        'end_date' => 'To Date',
+
     ];
     public string $dateField = 'created_at';
 
     /** UI: from/to (YYYY-MM-DD) */
     public ?string $dateFrom = null;
     public ?string $dateTo   = null;
+    public ?string $dateStart = null;
+    public ?string $dateEnd   = null;
 
     /** Keep filters in the URL */
     protected $queryString = [
@@ -36,6 +41,8 @@ class ChecklistTable extends ChecklistTableBase
         'dateField'  => ['except' => 'created_at'],
         'dateFrom'   => ['except' => null],
         'dateTo'     => ['except' => null],
+        // 'dateStart'   => ['except' => null],
+        // 'dateEnd'     => ['except' => null],
     ];
 
     public function mount(): void
@@ -43,6 +50,7 @@ class ChecklistTable extends ChecklistTableBase
         // Defaults: current month
         $this->dateFrom ??= Carbon::now()->startOfMonth()->toDateString();
         $this->dateTo   ??= Carbon::now()->toDateString();
+
     }
 
     /** When any of these update, reset to the first page */
@@ -126,11 +134,28 @@ class ChecklistTable extends ChecklistTableBase
                 'hide_sm'     => false,
             ],
             [
-                'field'   => 'created_at',
-                'label'   => 'Created',
+                'field'   => 'start_date',
+                'label'   => 'Start Date',
                 'type'    => 'date',
                 'format'  => 'Y-m-d',
 
+                'sortable'=> true,
+                'hide_sm' => true,
+            ],
+            [
+                'field'   => 'end_date',
+                'label'   => 'End Date',
+                'type'    => 'date',
+                'format'  => 'Y-m-d',
+
+                'sortable'=> true,
+                'hide_sm' => true,
+            ],
+            [
+                'field'   => 'created_at',
+                'label'   => 'Uploaded',
+                'type'    => 'date',
+                'format'  => 'Y-m-d',
                 'sortable'=> true,
                 'hide_sm' => true,
             ],

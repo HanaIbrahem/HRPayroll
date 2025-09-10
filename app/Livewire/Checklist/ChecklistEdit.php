@@ -13,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Str;
-
+use Carbon\Carbon;
 class ChecklistEdit extends Component
 {
     use WithFileUploads;
@@ -27,6 +27,8 @@ class ChecklistEdit extends Component
     public $file; // optional replacement
 
     public string $note = '';
+    public ?string $start_date = null; 
+    public ?string $end_date   = null;
 
     public function mount(Checklist $checklist): void
     {
@@ -43,6 +45,13 @@ class ChecklistEdit extends Component
 
         // Prefill note
         $this->note = (string) ($checklist->note ?? '');
+         $this->start_date = $checklist->start_date
+            ? Carbon::parse($checklist->start_date)->toDateString()
+            : Carbon::now()->startOfMonth()->toDateString();
+
+        $this->end_date = $checklist->end_date
+            ? Carbon::parse($checklist->end_date)->toDateString()
+            : Carbon::now()->toDateString();
     }
 
     public function render()
@@ -83,7 +92,9 @@ class ChecklistEdit extends Component
             ],
             // File is optional on edit
             'file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:2480'],
-            'note' => ['required', 'string', 'max:500'],
+            'note' => ['nullable', 'string', 'max:500'],
+            'start_date' => ['required', 'date', 'before_or_equal:end_date'],
+            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
         ];
     }
 
@@ -150,6 +161,8 @@ class ChecklistEdit extends Component
             $this->checklist->filename = $newPath;
         }
 
+        $this->checklist->start_date  = $this->start_date;
+        $this->checklist->end_date    = $this->end_date;
         // Update employee + note
         $this->checklist->employee_id = $employee->id;
         $this->checklist->note        = $this->note;

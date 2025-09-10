@@ -66,6 +66,14 @@
         <span class="label">Status:</span>
         <span class="value">{{ ucfirst($checklist->status) }}</span>
       </div>
+       <div class="cell">
+        <span class="label">From:</span>
+        <span class="value">{{ $checklist->start_date }}</span>
+      </div>
+        <div class="cell">
+        <span class="label">To:</span>
+        <span class="value">{{ $checklist->end_date }}</span>
+      </div>
     </div>
   </div>
 
@@ -80,6 +88,12 @@
         <th>To</th>
           <th class="right">Zone Count</th>
           <th class="right">Repeat Zone</th>
+           @if ($checklist->status == 'approved')
+          <th class="right">
+            Const
+          </th>
+
+           @endif
         </tr>
       </thead>
       <tbody>
@@ -91,6 +105,12 @@
             <td>{{ data_get($vz,'zone.to_zone','—') }}</td>
             <td class="right">{{ number_format((int)$vz->zone_count) }}</td>
             <td class="right">{{ number_format((int)$vz->repeat_count) }}</td>
+         
+            @if ($checklist->status == 'approved')
+
+            <td class="right">{{ number_format((int)$vz->calculated_cost) }}</td>
+            @endif
+
           </tr>
         @endforeach
       </tbody>
@@ -99,6 +119,10 @@
           <th colspan="4" class="right">Totals</th>
           <th class="right">{{ number_format($checklist->visitedZones->sum('zone_count')) }}</th>
           <th class="right">{{ number_format($checklist->visitedZones->sum('repeat_count')) }}</th>
+            @if ($checklist->status == 'approved')
+          
+          <th class="right">{{ number_format($checklist->visitedZones->sum('calculated_cost')) }}</th>
+        @endif
         </tr>
       </tfoot>
     </table>

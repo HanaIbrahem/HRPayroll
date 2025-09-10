@@ -20,10 +20,12 @@ class ChecklistFactory extends Factory
         $arr=['open','pending','approved','rejected'];
         return [
             //
-            'user_id'=>15,
-            'employee_id'=>12,
-            'filename'=>fake()->filePath(),
+            'user_id'=>123,
+            'employee_id'=>Employee::factory(),
+            'filename'=>'checklists/67EhMGgYaTs6U9cY6vU48x7cBmdpa9FhGsZPjGCZ.xlsx',
             'status'=>fake()->randomElement($arr),
+            'start_date'=>now(),
+            'end_date'=>now(),
 
         ];
     }

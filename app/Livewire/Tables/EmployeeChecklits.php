@@ -6,40 +6,66 @@ use App\Models\Checklist;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\WithPagination;
-
-class PendingTable extends DataTable
+class EmployeeChecklits extends DataTable
 {
-     
-
-     
-    public string $title = 'Pending ';
+    public string $title = 'Employee Checklists ';
 
    public array $dateFields = [
         'created_at' => 'Created at',
         'start_date' => 'From Date',
         'end_date' => 'To Date',
+        'approved_at' => 'Approved at',
+
     ];
     public string $dateField = 'created_at';
 
     /** UI: from/to (YYYY-MM-DD) */
     public ?string $dateFrom = null;
     public ?string $dateTo   = null;
+    public ?string $dateApproved   = null;
+
+    
     protected $queryString = [
         'q'          => ['except' => ''],
         'sortField'  => ['except' => 'id'],
         'sortDirection' => ['except' => 'asc'],
         'perPage'    => ['except' => 10],
-     
+        'dateField'  => ['except' => 'created_at'],
+        'dateFrom'   => ['except' => null],
+        'dateTo'     => ['except' => null],
+        'dateApproved'     => ['except' => null],
+
     ];
 
-   
+    public function mount(): void
+    {
+        // Defaults: current month
+        $this->dateFrom ??= Carbon::now()->startOfMonth()->toDateString();
+        $this->dateTo   ??= Carbon::now()->toDateString();
+        $this->dateApproved   ??= Carbon::now()->toDateString();
 
+    }
     public function updatedDateField(): void   { $this->resetPage(); }
     public function updatedDateFrom(): void    { $this->resetPage(); }
     public function updatedDateTo(): void      { $this->resetPage(); }
+    public function updatedDateApproved(): void   { $this->resetPage(); }
 
-  
- 
+    public function clearFilters(): void
+    {
+        $this->dateField = 'created_at';
+        $this->dateFrom  = Carbon::now()->startOfMonth()->toDateString();
+        $this->dateTo    = Carbon::now()->toDateString();
+        $this->dateApproved    = Carbon::now()->toDateString();
+
+        $this->q = '';
+        foreach ($this->columns() as $c) {
+            $type = $c['filter'] ?? $this->defaultFilterForType($c['type'] ?? 'text');
+            if ($type !== 'none') {
+                $this->filters[$this->filterBindingKey($c)] = '';
+            }
+        }
+        $this->resetPage();
+    }
 
     protected function modelClass(): string
     {
@@ -48,12 +74,29 @@ class PendingTable extends DataTable
 
     protected function baseQuery(): Builder
     {
-        $q = Checklist::query()->where('status','pending');
+        $q = Checklist::query()->where('status','approved');
+        
+         $column = in_array($this->dateField, array_keys($this->dateFields), true)
+            ? $this->dateField
+            : 'created_at';
+
+        $from = $this->dateFrom ? Carbon::parse($this->dateFrom)->startOfDay() : null;
+        $to   = $this->dateTo   ? Carbon::parse($this->dateTo)->endOfDay()     : null;
+
+        if ($from && $to) {
+            $q->whereBetween($column, [$from, $to]);
+        } elseif ($from) {
+            $q->where($column, '>=', $from);
+        } elseif ($to) {
+            $q->where($column, '<=', $to);
+        }
+
         return $q;
     }
 
     protected function columns(): array
     {
+      
         return [
             [
                 'field'      => 'employee.fullname',
@@ -61,60 +104,55 @@ class PendingTable extends DataTable
                 'search_on'  => ['employee.first_name', 'employee.last_name'],
                 'filter_on'  => ['employee.first_name', 'employee.last_name'],
                 'sortable'   => false,
-                'sort_on'    => 'employee.first_name',
                 'hide_sm'    => false,
-                'filter'      => 'text',
-
+                'filter'     => 'text',
             ],
-             [
+            [
                 'field'      => 'employee.code',
                 'label'      => 'Employee code',
                 'search_on'  => ['employee.code'],
                 'filter_on'  => ['employee.code'],
                 'sortable'   => false,
-                'sort_on'    => 'employee.code',
                 'hide_sm'    => false,
-                'filter'      => 'text',
-
+                'filter'     => 'text',
             ],
-              [
+            [
                 'field'      => 'user.department.name',
                 'label'      => 'Department',
                 'search_on'  => ['user.department.name'],
                 'filter_on'  => ['user.department.name'],
                 'sortable'   => false,
-                'sort_on'    => 'user.department.name',
                 'hide_sm'    => false,
-                'filter'      => 'text',
-
+                'filter'     => 'text',
             ],
-             [
+            [
                 'field'      => 'employee.location.name',
                 'label'      => 'Location',
                 'search_on'  => ['employee.location.name'],
                 'filter_on'  => ['employee.location.name'],
                 'sortable'   => false,
-                'sort_on'    => 'employee.location.name',
                 'hide_sm'    => true,
-                'filter'      => 'text',
-
+                'filter'     => 'text',
             ],
-              [
+            [
                 'field'      => 'user.fullname',
                 'label'      => 'Manager Name',
                 'search_on'  => ['user.first_name', 'user.last_name'],
                 'filter_on'  => ['user.first_name', 'user.last_name'],
                 'sortable'   => false,
-                'sort_on'    => 'user.first_name',
                 'hide_sm'    => true,
-                'filter'      => 'text',
-
+                'filter'     => 'text',
             ],
+
+         
             [
-                'field'       => 'status',
-                'label'       => 'Status',
-                'type'        => 'text',
-                'hide_sm'     => true,
+                'field'      => 'approver.fullname',
+                'label'      => 'Approved By',
+                'search_on'  => ['approver.first_name', 'approver.last_name'],
+                'filter_on'  => ['approver.first_name', 'approver.last_name'],
+                'sortable'   => true, 
+                'hide_sm'    => true,
+                'filter'     => 'text',
             ],
              [
                 'field'   => 'start_date',
@@ -134,131 +172,25 @@ class PendingTable extends DataTable
                 'sortable'=> true,
                 'hide_sm' => true,
             ],
+
+            [
+                'field'   => 'approved_at',
+                'label'   => 'Approved at',
+                'type'    => 'date',
+                'format'  => 'Y-m-d',
+                'sortable'=> true,
+                'hide_sm' => true,
+            ],
+
             [
                 'field'   => 'created_at',
                 'label'   => 'Uploaded',
                 'type'    => 'date',
                 'format'  => 'Y-m-d',
                 'sortable'=> true,
-                'hide_sm' => true,
+                'hide_sm' => false,
             ],
         ];
-    }
-
-    protected function canApproveRow($row): bool   { return $row->status === 'pending'; }
-    protected function canRejectRow($row): bool  { return $row->status === 'pending'; }
-
-    
-    protected function canEditRow($row): bool
-    {
-        return false;
-    }
-    protected function canDeleteRow($row): bool
-    {
-        return false;
-    }
-  
-    protected function canCloseRow($row): bool
-    {
-        return false;
-    }
-
-
-
-   
-
-    public function approve(int $id): void
-    {
-        $row = $this->baseQuery()->findOrFail($id);
-
-        if (!$this->canApproveRow($row)) {
-             $this->dispatch('toast', type: 'error', message: 'You cannot approve this checklist.');
-            return;
-        }
-
-        if ($row->status !== 'pending') {
-            $this->dispatch('toast', type: 'error', message: 'Only PENDING checklists can be approved.');
-            return;
-        }
-
-        $row->approved_at=Carbon::now();
-        $row->approved_by=auth()->user()->id;
-        try {
-        $this->calculate($row);
-
-        } catch (\Throwable $th) {
-        $this->dispatch('toast', type: 'error', message: 'Error !.'.$th->getMessage());
-
-        return;
-        }
-        $row->status = 'approved';
-        $row->save();
-        $this->dispatch('toast', type: 'success', message: 'Checklist APPROVED.');
-    }
-
-    public function reject(int $id): void
-    {
-
- 
-        $row = $this->baseQuery()->findOrFail($id);
-
-        if (!$this->canRejectRow($row)) {
-            $this->dispatch('toast', type: 'error', message: 'You cannot reject this checklist.');
-            return;
-        }
-
-        if (!in_array($row->status, ['open', 'pending', 'approved', 'rejected'], true)) {
-            $this->dispatch('toast', type: 'error', message:  'Invalid state.');
-            return;
-        }
-
-        //$row->approved_at=Carbon::now();
-        $row->approved_by=auth()->user()->id;
-        $row->status = 'rejected';
-        $row->save();
-        $this->dispatch('toast', type: 'success', message: 'Checklist REJECTED.');
-    }
-
-    protected function calculate(Checklist $checklist)
-    {
-
-        $checklist->load([
-          
-            'employee.location:id,iqd_per_km',
-            'visitedZones.zone:id,km,fixed_rate,between_zone',
-        ]);
-
-        $total=0;
-        $perkm=$checklist->employee->location->iqd_per_km;
-        
-        $zones=$checklist->visitedZones;
-        foreach ($zones as $vz) {
-
-            
-            $t=0;
-            $zcount= (int) ($vz->zone_count ?? 0);
-            $zrepeat=(int) ($vz->repeat_count ?? 0);;
-            $dif=max(0, $zcount - $zrepeat);;
-            $km=(float) ($vz->zone->km ?? 0);
-            $fixrate=(int) ($vz->zone->fixed_rate ?? 0);;
-            $between=(int) ($vz->zone->between_zone ?? 0);
-            if ($km >0 ) {
-                $t+= (( $zrepeat*$km)* $perkm);
-            }
-            if ($fixrate>0) {
-                $t+= ( $zrepeat*$fixrate);
-           
-            }
-
-            $t+=+ $dif*$between;
-            $vz->calculated_cost=$t;  
-            $vz->save();  
-       
-            $total+=$t;
-        }
-        
-
-       
     }
 
 
@@ -394,11 +326,10 @@ class PendingTable extends DataTable
     {
         $rows = $this->buildQuery()->paginate($this->perPage);
 
-        return view('livewire.tables.pending-table', [
+        return view('livewire.tables.employee-checklits', [
             'columns' => $this->columns(),
             'rows' => $rows,
             'title' => $this->title ?: class_basename($this->modelClass()),
         ]);
     }
-
 }

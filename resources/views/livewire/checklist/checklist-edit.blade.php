@@ -1,8 +1,8 @@
 <div>
-  <x-form.container title="Edit Checklist" description="Update the employee, note, or replace the file if needed.">
+  <x-form.container title="Edit Checklist" description="Update the employee, date range, note, or replace the file if needed.">
     <form wire:submit.prevent="update" class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
-      {{-- Employee (typable select restricted to current manager) --}}
+      {{-- Employee --}}
       <x-form.field class="md:col-span-6" title="Employee" for="employee_id" required>
         <div x-data="{ open:false }" @click.outside="open=false" class="relative">
           <input
@@ -38,17 +38,7 @@
         </div>
       </x-form.field>
 
-      {{-- Current file --}}
-      <x-form.field class="md:col-span-6" title="Current File">
-        @if ($checklist->filename)
-          <a class="link" href="{{ \Illuminate\Support\Facades\Storage::url($checklist->filename) }}" target="_blank">
-            {{ basename($checklist->filename) }}
-          </a>
-        @else
-          <span class="text-base-content/70">—</span>
-        @endif
-      </x-form.field>
-
+  
       {{-- Replace file (optional) --}}
       <x-form.field class="md:col-span-6" title="Replace File (optional)" for="file">
         <div
@@ -80,8 +70,30 @@
         </div>
       </x-form.field>
 
+      {{-- NEW: Start Date --}}
+      <x-form.field class="md:col-span-6" title="Start Date" for="start_date" required>
+        <input
+          type="date"
+          id="start_date"
+          name="start_date"
+          wire:model.live="start_date"
+          class="input input-bordered w-full @error('start_date') input-error border-error @enderror"
+        />
+      </x-form.field>
+
+      {{-- NEW: End Date --}}
+      <x-form.field class="md:col-span-6" title="End Date" for="end_date" required>
+        <input
+          type="date"
+          id="end_date"
+          name="end_date"
+          wire:model.live="end_date"
+          class="input input-bordered w-full @error('end_date') input-error border-error @enderror"
+        />
+      </x-form.field>
+
       {{-- Note --}}
-      <x-form.field class="md:col-span-12" title="Note" for="note" required>
+      <x-form.field class="md:col-span-12" title="Note" for="note">
         <textarea
           id="note"
           name="note"
@@ -90,9 +102,7 @@
           class="textarea textarea-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none @error('note') textarea-error border-error @enderror"
           placeholder="Short note..."
         ></textarea>
-        @error('note')
-          <p class="mt-1 text-xs text-error">{{ $message }}</p>
-        @enderror
+      
       </x-form.field>
 
       {{-- Live summary --}}
@@ -116,7 +126,10 @@
                 @endif
               </div>
             </div>
-            <div class="md:col-span-2">
+            <div>
+             
+            </div>
+            <div>
               <div class="font-semibold">Note</div>
               <div class="text-base-content/70">
                 {{ $note !== '' ? $note : '—' }}
@@ -138,7 +151,7 @@
             <span wire:loading.remove wire:target="update">Update</span>
             <span wire:loading wire:target="update" class="inline-flex items-center gap-2">
               <span class="loading loading-spinner loading-xs"></span>
-              Validating & saving…
+              Validating &amp; saving…
             </span>
           </button>
         </div>

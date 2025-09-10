@@ -54,11 +54,25 @@
 
       </x-form.field>
 
-        <x-form.field class="md:col-span-12" title="Note" for="note" required>
-                <textarea id="description" name="note" rows="3" wire:model.debounce.300ms="note"
-                    class="textarea textarea-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none @error('description') textarea-error border-error @enderror"
-                    placeholder="Short note..."></textarea>
-            </x-form.field>
+      {{-- NEW: Start Date --}}
+      <x-form.field class="md:col-span-6" title="Start Date" for="start_date" required>
+        <input type="date" id="start_date" name="start_date" wire:model.live="start_date"
+          class="input input-bordered w-full @error('start_date') input-error border-error @enderror" />
+       
+      </x-form.field>
+
+      {{-- NEW: End Date --}}
+      <x-form.field class="md:col-span-6" title="End Date" for="end_date" required>
+        <input type="date" id="end_date" name="end_date" wire:model.live="end_date"
+          class="input input-bordered w-full @error('end_date') input-error border-error @enderror" />
+       
+      </x-form.field>
+
+      <x-form.field class="md:col-span-12" title="Note" for="note">
+        <textarea id="description" name="note" rows="3" wire:model.debounce.300ms="note"
+          class="textarea textarea-bordered w-full focus:border-primary focus:ring focus:ring-primary/20 focus:outline-none @error('description') textarea-error border-error @enderror"
+          placeholder="Short note..."></textarea>
+      </x-form.field>
 
       {{-- Live Preview --}}
       <div class="md:col-span-12">
@@ -97,18 +111,15 @@
         </div>
       </div>
 
-      {{-- Submit --}} 
+      {{-- Submit --}}
       <div class="w-50">
-        <button type="submit"
-            class="btn btn-primary btn-block"
-            wire:loading.attr="disabled"
-            wire:target="save">
-      <span wire:loading.remove wire:target="save">Save</span>
-      <span wire:loading wire:target="save" class="inline-flex items-center gap-2">
-        <span class="loading loading-spinner loading-xs"></span>
-        Validating & saving…
-      </span>
-    </button>
+        <button type="submit" class="btn btn-primary btn-block" wire:loading.attr="disabled" wire:target="save">
+          <span wire:loading.remove wire:target="save">Save</span>
+          <span wire:loading wire:target="save" class="inline-flex items-center gap-2">
+            <span class="loading loading-spinner loading-xs"></span>
+            Validating & saving…
+          </span>
+        </button>
       </div>
     </form>
   </x-form.container>

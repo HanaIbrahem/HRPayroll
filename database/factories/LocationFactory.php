@@ -18,7 +18,7 @@ class LocationFactory extends Factory
     {
         return [
             //
-            'name'=>fake()->country(),
+            'name'=>fake()->city(),
             'iqd_per_km'=>fake()->numberBetween(200,500),
             'maximum_price'=>fake()->numberBetween(300000,500000)
         ];

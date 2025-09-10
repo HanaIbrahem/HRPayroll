@@ -14,6 +14,7 @@ use App\Livewire\Departments\DepartmentEdit;
 use App\Livewire\Employee\EmployeeComponent;
 use App\Livewire\Employee\EmployeeEdit;
 use App\Livewire\Hr\ChecklistShow;
+use App\Livewire\Hr\EmployeeChecklists;
 use App\Livewire\Location\LocationComponent;
 use App\Livewire\Location\LocationEdit;
 use App\Livewire\Pending\PendingComponent;
@@ -26,14 +27,14 @@ use Illuminate\Support\Facades\Route;
 
 
 // shaired route 
-Route::middleware(['auth','role:manager,hr,admin'])->group(function () {
+Route::middleware(['auth', 'role:manager,hr,admin'])->group(function () {
 
     Route::get('/', Dashboard::class)->name('dashboard');
-  
+
 });
 
 // admin roues 
-Route::middleware(['auth','role:admin'])->group(function () {
+Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // department routes 
     Route::get('/department', DepartmentComponent::class)->name('department');
@@ -45,20 +46,20 @@ Route::middleware(['auth','role:admin'])->group(function () {
     Route::get('/zone', ZoneComponent::class)->name('zone');
     Route::get('/zone/edit/{zone}', ZoneEdit::class)->name('zone.edit');
     // authentication 
-    Route::get('/users',UserComponent::class)->name('user');
-    Route::get('/uses/edit/{user}',UserEdit::class)->name('user.edit');
+    Route::get('/users', UserComponent::class)->name('user');
+    Route::get('/uses/edit/{user}', UserEdit::class)->name('user.edit');
 
     // employee location routes 
-    Route::get('/locations',LocationComponent::class)->name('location');
-    Route::get('/location/edit/{location}',LocationEdit::class)->name('location.edit');
+    Route::get('/locations', LocationComponent::class)->name('location');
+    Route::get('/location/edit/{location}', LocationEdit::class)->name('location.edit');
 
 
 });
 
 // manager routes 
-Route::middleware(['auth','role:manager'])->group(function () {
+Route::middleware(['auth', 'role:manager'])->group(function () {
 
-   // checklist
+    // checklist
     Route::get('/checklist', ChecklistComponent::class)->name('checklist');
     Route::get('/checklist/create', ChecklistCreate::class)->name('checklist.create');
     Route::get('/checklist/edit/{checklist}', ChecklistEdit::class)->name('checklist.edit');
@@ -108,10 +109,11 @@ Route::middleware(['auth','role:manager'])->group(function () {
 
 
 // hr routes
-Route::middleware(['auth','role:hr'])->group(function () {
+Route::middleware(['auth', 'role:hr'])->group(function () {
 
     Route::get('/pending', PendingComponent::class)->name('hr.pending');
     Route::get('/checklist/show/{checklist}', ChecklistShow::class)->name('hr.show');
+    Route::get('/checklists', EmployeeChecklists::class)->name('hr.checklist');
 
 
 });

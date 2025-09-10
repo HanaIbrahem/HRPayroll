@@ -143,7 +143,7 @@
 
         @if (auth()->user()->isRole('hr'))
 
-        <x-nav.link route="hr.pending" match="hr.*" class="mb-1">
+        <x-nav.link route="hr.pending" match="hr.pending*" class="mb-1">
           <span class="inline-flex items-center gap-2">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"
               stroke-width="1.5">
@@ -152,6 +152,22 @@
             <span>Pending</span>
           </span>
         </x-nav.link>
+ 
+<x-nav.link route="hr.checklist" match="hr.checklist*" class="mb-1">
+  <span class="inline-flex items-center gap-2">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <!-- Person -->
+      <circle cx="8" cy="7" r="2"></circle>
+      <path d="M4.5 20v-2a5.5 5.5 0 0 1 11 0v2"></path>
+      <!-- Location pin -->
+      <path d="M16 4c-2.21 0-4 1.79-4 4 0 3.2 4 7 4 7s4-3.8 4-7c0-2.21-1.79-4-4-4z"></path>
+      <circle cx="16" cy="8" r="1"></circle>
+    </svg>
+    <span>Employee Visits</span>
+  </span>
+</x-nav.link>
+
 
 
         @endif

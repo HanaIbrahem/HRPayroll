@@ -4,7 +4,7 @@
         <div>
             <div class="breadcrumbs text-sm">
                 <ul>
-                    <li><a wire:navigate href="{{ route('checklist') }}">Checklists</a></li>
+                    {{-- <li><a wire:navigate href="{{ route('') }}">Checklists</a></li> --}}
                     <li>Show</li>
                 </ul>
             </div>
@@ -20,9 +20,9 @@
 
         <div class="flex flex-wrap items-center gap-2">
 
-            
 
-           
+
+
 
             @if ($this->excelPath)
             <a href="{{ \Illuminate\Support\Facades\Storage::url($this->excelPath) }}" target="_blank"
@@ -30,8 +30,26 @@
                 Download Excel
             </a>
             @endif
-             <button wire:click="exportPdf" class="btn btn-primary btn-sm">PDF Report</button>
-      <button wire:click="exportXlsx" class="btn btn-success btn-sm">Excel Report</button>
+
+            <button wire:click="exportPdf" wire:loading.attr="disabled" wire:target="exportPdf"
+                class="btn btn-primary btn-sm">
+                <span wire:loading.remove wire:target="exportPdf">PDF Report</span>
+                <span wire:loading wire:target="exportPdf" class="inline-flex items-center gap-2">
+                    <span class="loading loading-spinner loading-xs"></span>
+                    Generating
+                </span>
+            </button>
+
+            <button wire:click="exportXlsx" wire:loading.attr="disabled" wire:target="exportXlsx"
+                class="btn btn-success btn-sm">
+                <span wire:loading.remove wire:target="exportXlsx">Excel Report</span>
+                <span wire:loading wire:target="exportXlsx" class="inline-flex items-center gap-2">
+                    <span class="loading loading-spinner loading-xs"></span>
+                    Generating
+                </span>
+            </button>
+
+
         </div>
     </div>
 
@@ -47,7 +65,7 @@
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee</dt>
                             <dd class="col-span-2 text-sm">{{ data_get($checklist, 'employee.fullname') ?? '—' }}</dd>
                         </div>
-                       
+
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Code</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->employee->code ?? '—' }}</dd>
@@ -56,13 +74,21 @@
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Location</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->employee->location->name ?? '—' }}</dd>
                         </div>
-                         <div class="py-2 grid grid-cols-3 gap-2">
+                        <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Manager</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->user->fullname ?? '—' }}</dd>
                         </div>
-                          <div class="py-2 grid grid-cols-3 gap-2">
+                        <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Employee Department</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->employee->department->name ?? '—' }}</dd>
+                        </div>
+                           <div class="py-2 grid grid-cols-3 gap-2">
+                            <dt class="text-xs uppercase tracking-wide text-base-content/60">Start Date</dt>
+                            <dd class="col-span-2 text-sm">{{ $checklist->start_date }}</dd>
+                        </div>
+                        <div class="py-2 grid grid-cols-3 gap-2">
+                            <dt class="text-xs uppercase tracking-wide text-base-content/60">End Date</dt>
+                            <dd class="col-span-2 text-sm">{{ $checklist->end_date }}</dd>
                         </div>
                         <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Created</dt>
@@ -72,7 +98,7 @@
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Updated</dt>
                             <dd class="col-span-2 text-sm">{{ $checklist->updated_at?->format('Y-m-d H:i') }}</dd>
                         </div>
-                         <div class="py-2 grid grid-cols-3 gap-2">
+                        <div class="py-2 grid grid-cols-3 gap-2">
                             <dt class="text-xs uppercase tracking-wide text-base-content/60">Status</dt>
                             <dd class="col-span-2">
                                 <x-status :status="$checklist->status" />
@@ -81,7 +107,7 @@
                     </dl>
                 </div>
             </div>
-             <div class="card bg-base-100 border border-base-300/60">
+            <div class="card bg-base-100 border border-base-300/60">
                 <div class="card-body">
                     <h2 class="card-title text-base">Notes</h2>
                     <p class="text-sm leading-6 text-base-content/80">
@@ -105,8 +131,14 @@
                                     <th class="px-3 py-2 text-xs font-semibold text-base-content/70">Code</th>
                                     <th class="px-3 py-2 text-xs font-semibold text-base-content/70 ">From</th>
                                     <th class="px-3 py-2 text-xs font-semibold text-base-content/70 ">To</th>
-                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70 text-right">ZoneCount</th>
-                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70 text-right">RepeatZone</th>
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70 text-right">
+                                        ZoneCount</th>
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70 text-right">
+                                        RepeatZone</th>
+                                    @if ($checklist->status == 'approved')
+                                    <th class="px-3 py-2 text-xs font-semibold text-base-content/70 text-right">Cost
+                                    </th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody class="text-sm">
@@ -128,6 +160,12 @@
                                     <td class="px-3 py-2 text-right">
                                         {{ number_format((int)$vz->repeat_count) }}
                                     </td>
+                                    @if ($checklist->status == 'approved')
+
+                                    <td class="px-3 py-2 text-right">
+                                        {{ number_format((int)$vz->calculated_cost) }}
+                                    </td>
+                                    @endif
                                 </tr>
                                 @empty
                                 <tr>
@@ -151,6 +189,16 @@
                                     <th class="px-3 py-2 text-right">
                                         {{ number_format($checklist->visitedZones->sum('repeat_count')) }}
                                     </th>
+
+                                    @if ($checklist->status == 'approved')
+
+                                    <th class="px-3 py-2 text-right">
+                                        {{ number_format($checklist->visitedZones->sum('calculated_cost')) }}
+
+                                    </th>
+
+                                    @endif
+
                                 </tr>
                             </tfoot>
                             @endif
@@ -162,9 +210,9 @@
 
 
 
-           
+
         </div>
     </div>
 
-  
+
 </div>
