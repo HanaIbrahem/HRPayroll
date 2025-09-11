@@ -45,7 +45,12 @@ class User extends Authenticatable
 
     public function department()
     {
-        return $this->belongsTo(\App\Models\Department::class);
+        return $this->belongsTo(Department::class);
+    }
+
+    public function employees()
+    {
+        return $this->hasMany(Employee::class);
     }
 
     public function isRole(string $role): bool

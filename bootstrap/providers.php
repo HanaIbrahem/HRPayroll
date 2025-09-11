@@ -3,4 +3,5 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\ExcelZonesProvider::class,
+    App\Providers\ReportService::class,
 ];

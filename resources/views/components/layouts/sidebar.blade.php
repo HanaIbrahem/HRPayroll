@@ -152,22 +152,39 @@
             <span>Pending</span>
           </span>
         </x-nav.link>
- 
-<x-nav.link route="hr.checklist" match="hr.checklist*" class="mb-1">
-  <span class="inline-flex items-center gap-2">
-    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
-         stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <!-- Person -->
-      <circle cx="8" cy="7" r="2"></circle>
-      <path d="M4.5 20v-2a5.5 5.5 0 0 1 11 0v2"></path>
-      <!-- Location pin -->
-      <path d="M16 4c-2.21 0-4 1.79-4 4 0 3.2 4 7 4 7s4-3.8 4-7c0-2.21-1.79-4-4-4z"></path>
-      <circle cx="16" cy="8" r="1"></circle>
-    </svg>
-    <span>Employee Visits</span>
-  </span>
-</x-nav.link>
 
+        <x-nav.link route="hr.checklist" match="hr.checklist*" class="mb-1">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <!-- Person -->
+              <circle cx="8" cy="7" r="2"></circle>
+              <path d="M4.5 20v-2a5.5 5.5 0 0 1 11 0v2"></path>
+              <!-- Location pin -->
+              <path d="M16 4c-2.21 0-4 1.79-4 4 0 3.2 4 7 4 7s4-3.8 4-7c0-2.21-1.79-4-4-4z"></path>
+              <circle cx="16" cy="8" r="1"></circle>
+            </svg>
+            <span>Employee Visits</span>
+          </span>
+        </x-nav.link>
+
+
+
+
+
+        <x-nav.link route="hr.report" match="hr.report*" class="mb-1">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <!-- Document with fold -->
+              <path d="M8 3h6l5 5v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+              <path d="M14 3v5h5" />
+              <!-- Bars -->
+              <path d="M9 17v-4M12 17v-6M15 17v-3" />
+            </svg>
+            <span>Reports</span>
+          </span>
+        </x-nav.link>
 
 
         @endif

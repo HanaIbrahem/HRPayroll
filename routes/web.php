@@ -18,6 +18,7 @@ use App\Livewire\Hr\EmployeeChecklists;
 use App\Livewire\Location\LocationComponent;
 use App\Livewire\Location\LocationEdit;
 use App\Livewire\Pending\PendingComponent;
+use App\Livewire\Report\ReportComponent;
 use App\Livewire\Zone\ZoneComponent;
 use App\Livewire\Zone\ZoneEdit;
 use App\Livewire\Checklist\CkecklistShow;
@@ -114,6 +115,7 @@ Route::middleware(['auth', 'role:hr'])->group(function () {
     Route::get('/pending', PendingComponent::class)->name('hr.pending');
     Route::get('/checklist/show/{checklist}', ChecklistShow::class)->name('hr.show');
     Route::get('/checklists', EmployeeChecklists::class)->name('hr.checklist');
+    Route::get('/report', ReportComponent::class)->name('hr.report');
 
 
 });

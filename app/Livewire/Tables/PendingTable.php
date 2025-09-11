@@ -256,6 +256,8 @@ class PendingTable extends DataTable
        
             $total+=$t;
         }
+        $checklist->calculated_cost=$total;
+        $checklist->save();
         
 
        

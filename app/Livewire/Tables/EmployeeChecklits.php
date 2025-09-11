@@ -11,9 +11,9 @@ class EmployeeChecklits extends DataTable
     public string $title = 'Employee Checklists ';
 
    public array $dateFields = [
-        'created_at' => 'Created at',
-        'start_date' => 'From Date',
-        'end_date' => 'To Date',
+        'created_at' => 'Uploaded at',
+        'start_date' => 'Start Date',
+        'end_date' => 'End Date',
         'approved_at' => 'Approved at',
 
     ];
@@ -144,7 +144,15 @@ class EmployeeChecklits extends DataTable
                 'filter'     => 'text',
             ],
 
-         
+          [
+                'field'      => 'calculated_cost',
+                'label'      => 'Totsl Cost',
+                'search_on'  => 'calculated_cost',
+                'filter_on'  => 'calculated_cost',
+                'sortable'   => true,
+                'hide_sm'    => true,
+                'filter'     => 'text',
+            ],
             [
                 'field'      => 'approver.fullname',
                 'label'      => 'Approved By',
