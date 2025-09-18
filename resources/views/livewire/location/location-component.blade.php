@@ -2,7 +2,7 @@
 
 
 
-    <x-form.container title="Create Employee">
+    <x-form.container title="Create Location">
         <form wire:submit.prevent="save" class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
             <x-form.field class="md:col-span-6" title="Name" for="locationname" required>

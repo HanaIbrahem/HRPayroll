@@ -239,7 +239,7 @@
                                         </dl>
 
                                         <div class="mt-3 flex flex-wrap gap-1">
-                                            <a wire:navigate href="{{ route('checklist.show', $r->id) }}" class="btn btn-ghost btn-xs" title="View">
+                                            <a wire:navigate href="{{ route('hr.show', $r->id) }}" class="btn btn-ghost btn-xs" title="View">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                                                     <path d="M12 5C4.367 5 1 12 1 12s3.367 7 11 7 11-7 11-7-3.367-7-11-7Zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
                                                 </svg>

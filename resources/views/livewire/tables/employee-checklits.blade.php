@@ -230,7 +230,7 @@
                                     </dl>
 
                                     <div class="mt-3 flex flex-wrap gap-1">
-                                        <a wire:navigate href="{{ route('checklist.show', $r->id) }}"
+                                        <a wire:navigate href="{{ route('hr.show', $r->id) }}"
                                             class="btn btn-ghost btn-xs" title="View">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
                                                 fill="currentColor">

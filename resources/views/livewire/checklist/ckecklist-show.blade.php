@@ -174,7 +174,6 @@
     </div>
 
     {{-- NEW ROW: Excel preview (full width, below the grid) --}}
-    @if ($this->excelPath)
 
     <div class="w-full">
         <div class="card bg-base-100 border border-base-300/60">
@@ -208,7 +207,6 @@
         </div>
     </div>
 
-    {{-- Optional: sticky header for tables inside the preview --}}
     <style>
         .excel-scroll thead th {
             position: sticky;
@@ -219,5 +217,5 @@
         }
     </style>
 
-    @endif
+    
 </div>

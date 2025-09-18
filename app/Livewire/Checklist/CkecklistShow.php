@@ -16,23 +16,13 @@ class CkecklistShow extends Component
     // If user changes the <select wire:model="sheets"> value, mirror it into $sheet
     public function updatedSheet($value): void
     {
-        $this->sheet = $value ?: null;
+        
+        $this->sheet = $value ?: null;  
 
     }
 
 
 
-    public function mount(Checklist $checklist)
-    {
-
-
-
-        $this->checklist = $checklist->load([
-            'employee.location',
-            'user.department',
-            'visitedZones.zone',
-        ]);
-    }
 
     public function getExcelPathProperty(): ?string
     {
@@ -58,6 +48,11 @@ class CkecklistShow extends Component
 
     public function render()
     {
+        $this->checklist->loadMissing([
+        'employee.location',
+        'user.department',
+        'visitedZones.zone',
+    ]);
         return view('livewire.checklist.ckecklist-show');
     }
 

@@ -10,6 +10,7 @@ use App\Models\Employee;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory; 
+use Mpdf\Mpdf;
 class ReportTable extends DataTable
 {
      public string $title = 'Employee Checklists ';
@@ -94,27 +95,35 @@ class ReportTable extends DataTable
     }
 
     /** PDF export */
+    
     public function exportPdf()
-    {
-        $rows = $this->exportRows();
+{
+    $rows = $this->exportRows();
 
-        $view = $this->withVisited
-            ? 'exports.report-detailed'   // with visited zones, one page per checklist
-            : 'exports.report-summary';   // one row per checklist
+    $view = $this->withVisited
+        ? 'exports.report-detailed'
+        : 'exports.report-summary';
 
-        $html = view($view, [
-            'rows'        => $rows,
-            'withVisited' => $this->withVisited,
-        ])->render();
+    $html = view($view, [
+        'rows' => $rows,
+        'withVisited' => $this->withVisited,
+    ])->render();
 
-        $pdf = app('dompdf.wrapper')->setPaper('a4')->loadHTML($html);
+    // mPDF setup (specify font that supports Arabic)
+    $mpdf = new Mpdf([
+        'mode' => 'utf-8',
+        'format' => 'A4',
+        'default_font' => 'dejavusans',
+    ]);
 
-        $name = 'checklists-'.now()->format('Ymd-His').'.pdf';
+    $mpdf->WriteHTML($html);
 
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, $name, ['Content-Type' => 'application/pdf']);
-    }
+    $name = 'checklists-' . now()->format('Ymd-His') . '.pdf';
+
+    return response()->streamDownload(function () use ($mpdf) {
+        echo $mpdf->Output('', 'S'); // S: return as string
+    }, $name, ['Content-Type' => 'application/pdf']);
+}
 
     /** Excel export */
     public function exportXlsx()
@@ -127,11 +136,13 @@ class ReportTable extends DataTable
             $writer->openToFile('php://output');
 
             if ($this->withVisited) {
+                $iteration=0;
                 // Detailed: one sheet per checklist
                 foreach ($rows as $c) {
+                    $iteration++;
                     $emp  = data_get($c, 'employee.fullname', 'Employee');
                     $code = data_get($c, 'employee.code');
-                    $title = trim(substr(($emp ?: 'Employee').($code ? " ({$code})" : ''), 0, 31)) ?: 'Sheet';
+                    $title = trim(substr(($emp ?: 'Employee').($code ? " ({$code})" : '').'#'.$iteration, 0, 31)) ?: 'Sheet';
 
                     $writer->addNewSheetAndMakeItCurrent();
                     $writer->getCurrentSheet()->setName($title);

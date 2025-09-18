@@ -6,7 +6,7 @@ use Livewire\Component;
 use App\Models\Checklist;
 use Illuminate\Support\Facades\Storage;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
-
+use Mpdf\Mpdf;
 class ChecklistShow extends Component
 {
     public Checklist $checklist;
@@ -36,47 +36,67 @@ class ChecklistShow extends Component
 
     }
 
+
     public function exportPdf()
     {
+        $checklistpdf = $this->checklist->load([
+            'employee.location',
+            'employee.department',
+            'user.department',
+            'visitedZones.zone',
+        ]);
         $html = view('exports.checklist-report', [
-            'checklist' => $this->checklist,
+            'checklist' => $checklistpdf,
         ])->render();
 
-        $pdf = app('dompdf.wrapper')
-            ->setPaper('a4')
-            ->loadHTML($html);
+        // Create mPDF instance with Arabic font support
+        $mpdf = new Mpdf([
+            'mode' => 'utf-8',
+            'format' => 'A4',
+            'default_font' => 'dejavusans',
+        ]);
 
-        $name = 'checklist-'.$this->checklist->id.'.pdf';
+        $mpdf->WriteHTML($html);
 
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
+        $name = 'checklist-' . $this->checklist->id . '.pdf';
+
+        return response()->streamDownload(function () use ($mpdf) {
+            echo $mpdf->Output('', 'S'); // Output as string
         }, $name, ['Content-Type' => 'application/pdf']);
     }
 
+
     public function exportXlsx()
     {
-        $name = 'checklist-'.$this->checklist->id.'.xlsx';
+        $checklist = $this->checklist->load([
+            'employee.location',
+            'employee.department',
+            'user.department',
+            'visitedZones.zone',
+        ]);
 
-        return response()->streamDownload(function () {
+        $name = 'checklist-' . $checklist->id . '.xlsx';
+
+        return response()->streamDownload(function () use ($checklist) {
             $writer = WriterEntityFactory::createXLSXWriter();
             $writer->openToFile('php://output');
 
-            // --- Title
+            // Title
             $writer->addRow(WriterEntityFactory::createRow([
-                WriterEntityFactory::createCell('Checklist #'.$this->checklist->id.' Report'),
+                WriterEntityFactory::createCell('Checklist #' . $checklist->id . ' Report'),
             ]));
             $writer->addRow(WriterEntityFactory::createRow([]));
 
-            // --- Overview (key/value)
+            // Overview
             $pairs = [
-                ['Employee', data_get($this->checklist,'employee.fullname','—')],
-                ['Employee Code', data_get($this->checklist,'employee.code','—')],
-                ['Employee Location', data_get($this->checklist,'employee.location.name','—')],
-                ['Employee Manager', data_get($this->checklist,'user.fullname','—')],
-                ['Department', data_get($this->checklist,'employee.department.name','—')],
-                ['Status', ucfirst($this->checklist->status)],
-                ['Created', optional($this->checklist->created_at)->format('Y-m-d H:i')],
-                ['Updated', optional($this->checklist->updated_at)->format('Y-m-d H:i')],
+                ['Employee', data_get($checklist, 'employee.fullname', '—')],
+                ['Employee Code', data_get($checklist, 'employee.code', '—')],
+                ['Employee Location', data_get($checklist, 'employee.location.name', '—')],
+                ['Employee Manager', data_get($checklist, 'user.fullname', '—')],
+                ['Department', data_get($checklist, 'employee.department.name', '—')],
+                ['Status', ucfirst($checklist->status)],
+                ['Created', optional($checklist->created_at)->format('Y-m-d H:i')],
+                ['Updated', optional($checklist->updated_at)->format('Y-m-d H:i')],
             ];
             foreach ($pairs as $row) {
                 $writer->addRow(WriterEntityFactory::createRow([
@@ -87,7 +107,7 @@ class ChecklistShow extends Component
 
             $writer->addRow(WriterEntityFactory::createRow([]));
 
-            // --- Visited Zones table
+            // Visited Zones table
             $writer->addRow(WriterEntityFactory::createRow([
                 WriterEntityFactory::createCell('#'),
                 WriterEntityFactory::createCell('Code'),
@@ -95,29 +115,34 @@ class ChecklistShow extends Component
                 WriterEntityFactory::createCell('To'),
                 WriterEntityFactory::createCell('Zone Count'),
                 WriterEntityFactory::createCell('Repeat Zone'),
+                WriterEntityFactory::createCell('Total Cost'),
+
             ]));
 
-            foreach ($this->checklist->visitedZones as $i => $vz) {
+            foreach ($checklist->visitedZones as $i => $vz) {
                 $writer->addRow(WriterEntityFactory::createRow([
                     WriterEntityFactory::createCell($i + 1),
-                    WriterEntityFactory::createCell((string) data_get($vz,'zone.code','—')),
-                    WriterEntityFactory::createCell((string) data_get($vz,'zone.from_zone','—')),
-                    WriterEntityFactory::createCell((string) data_get($vz,'zone.to_zone','—')),
+                    WriterEntityFactory::createCell((string) data_get($vz, 'zone.code', '—')),
+                    WriterEntityFactory::createCell((string) data_get($vz, 'zone.from_zone', '—')),
+                    WriterEntityFactory::createCell((string) data_get($vz, 'zone.to_zone', '—')),
                     WriterEntityFactory::createCell((int) $vz->zone_count),
                     WriterEntityFactory::createCell((int) $vz->repeat_count),
+                    WriterEntityFactory::createCell((int) $vz->calculated_cost),
+               
                 ]));
             }
 
-            // Totals
-            if ($this->checklist->visitedZones->isNotEmpty()) {
+            if ($checklist->visitedZones->isNotEmpty()) {
                 $writer->addRow(WriterEntityFactory::createRow([]));
                 $writer->addRow(WriterEntityFactory::createRow([
                     WriterEntityFactory::createCell('Totals'),
                     WriterEntityFactory::createCell(''),
                     WriterEntityFactory::createCell(''),
                     WriterEntityFactory::createCell(''),
-                    WriterEntityFactory::createCell((int) $this->checklist->visitedZones->sum('zone_count')),
-                    WriterEntityFactory::createCell((int) $this->checklist->visitedZones->sum('repeat_count')),
+                    WriterEntityFactory::createCell((int) $checklist->visitedZones->sum('zone_count')),
+                    WriterEntityFactory::createCell((int) $checklist->visitedZones->sum('repeat_count')),
+                    WriterEntityFactory::createCell((int) $checklist->calculated_cost),
+              
                 ]));
             }
 
@@ -126,6 +151,7 @@ class ChecklistShow extends Component
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         ]);
     }
+
     public function getExcelPathProperty(): ?string
     {
         // adapt to your column name(s):

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Arr;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Mpdf\Mpdf;
 use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 
 abstract class DataTable extends Component
@@ -15,10 +16,10 @@ abstract class DataTable extends Component
     use WithPagination;
 
     protected $queryString = [
-        'q'             => ['except' => ''],
-        'sortField'     => ['except' => 'id'],
+        'q' => ['except' => ''],
+        'sortField' => ['except' => 'id'],
         'sortDirection' => ['except' => 'asc'],
-        'perPage'       => ['except' => 10],
+        'perPage' => ['except' => 10],
     ];
 
     public int $perPage = 10;
@@ -34,8 +35,14 @@ abstract class DataTable extends Component
     abstract protected function columns(): array;
 
     protected $paginationTheme = 'tailwind';
-    public function paginationView()       { return 'vendor.livewire.tailwind'; }
-    public function paginationSimpleView() { return 'vendor.livewire.simple-tailwind'; }
+    public function paginationView()
+    {
+        return 'vendor.livewire.tailwind';
+    }
+    public function paginationSimpleView()
+    {
+        return 'vendor.livewire.simple-tailwind';
+    }
 
     public function mount(): void
     {
@@ -61,7 +68,8 @@ abstract class DataTable extends Component
     public function updatedPerPage($value): void
     {
         $v = (int) $value;
-        if (!in_array($v, $this->perPageOptions, true)) $v = 10;
+        if (!in_array($v, $this->perPageOptions, true))
+            $v = 10;
         $this->perPage = $v;
     }
 
@@ -80,7 +88,8 @@ abstract class DataTable extends Component
     public function sortBy(string $field): void
     {
         $cols = collect($this->columns())->keyBy('field');
-        if (!$cols->has($field) || !($cols[$field]['sortable'] ?? true)) return;
+        if (!$cols->has($field) || !($cols[$field]['sortable'] ?? true))
+            return;
 
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -106,8 +115,9 @@ abstract class DataTable extends Component
     /** For "relation.path.column" return [relationPath, column]; null if simple field. */
     protected function parseRelationField(string $field): ?array
     {
-        if (strpos($field, '.') === false) return null;
-        $parts  = explode('.', $field);
+        if (strpos($field, '.') === false)
+            return null;
+        $parts = explode('.', $field);
         $column = array_pop($parts);
         $relation = implode('.', $parts);
         return [$relation, $column];
@@ -126,8 +136,8 @@ abstract class DataTable extends Component
         foreach ($cols as $c) {
             $candidates = array_filter([
                 $c['field'] ?? null,
-                ...((array)($c['filter_on'] ?? [])),
-                ...((array)($c['search_on'] ?? [])),
+                ...((array) ($c['filter_on'] ?? [])),
+                ...((array) ($c['search_on'] ?? [])),
             ]);
 
             foreach ($candidates as $cand) {
@@ -143,17 +153,20 @@ abstract class DataTable extends Component
     protected function statusField(): ?string
     {
         foreach ($this->columns() as $c) {
-            if (($c['type'] ?? 'text') === 'boolean' && ($c['status'] ?? false)) return $c['field'];
+            if (($c['type'] ?? 'text') === 'boolean' && ($c['status'] ?? false))
+                return $c['field'];
         }
         foreach ($this->columns() as $c) {
-            if (($c['type'] ?? 'text') === 'boolean') return $c['field'];
+            if (($c['type'] ?? 'text') === 'boolean')
+                return $c['field'];
         }
         return null;
     }
 
     public function toggleStatus(int $id): void
     {
-        if ($field = $this->statusField()) $this->toggle($field, $id);
+        if ($field = $this->statusField())
+            $this->toggle($field, $id);
     }
 
     public function edit(int $id): void
@@ -172,8 +185,8 @@ abstract class DataTable extends Component
 
         return view('livewire.tables.data-table', [
             'columns' => $this->columns(),
-            'rows'    => $rows,
-            'title'   => $this->title ?: class_basename($this->modelClass()),
+            'rows' => $rows,
+            'title' => $this->title ?: class_basename($this->modelClass()),
         ]);
     }
 
@@ -183,11 +196,14 @@ abstract class DataTable extends Component
         $modelClass = $this->modelClass();
         $model = new $modelClass;
 
-        if (str_contains($relationPath, '.')) return false; // one hop only here
-        if (!method_exists($model, $relationPath)) return false;
+        if (str_contains($relationPath, '.'))
+            return false; // one hop only here
+        if (!method_exists($model, $relationPath))
+            return false;
 
         $rel = $model->{$relationPath}();
-        if (!$rel instanceof BelongsTo) return false;
+        if (!$rel instanceof BelongsTo)
+            return false;
 
         $related = $rel->getRelated();
         $relatedTable = $related->getTable();
@@ -207,21 +223,22 @@ abstract class DataTable extends Component
         $model = $this->modelClass();
         /** @var Builder $query */
         $query = $model::query();
-        $cols  = $this->columns();
+        $cols = $this->columns();
 
         // 1) Eager-load relations referenced in field/filter_on/search_on
         $with = $this->relationsFromColumns($cols);
-        if (!empty($with)) $query->with($with);
+        if (!empty($with))
+            $query->with($with);
 
         // 2) Global search (supports relational via 'search_on' or falls back to field)
         if ($this->q !== '') {
             $needle = trim($this->q);
-            $lower  = mb_strtolower($needle);
+            $lower = mb_strtolower($needle);
             $searchables = array_values(array_filter($cols, fn($c) => $c['searchable'] ?? true));
 
             $query->where(function (Builder $sub) use ($searchables, $needle, $lower) {
                 foreach ($searchables as $c) {
-                    $targets = (array)($c['search_on'] ?? [$c['field']]);
+                    $targets = (array) ($c['search_on'] ?? [$c['field']]);
                     foreach ($targets as $target) {
                         if ($rc = $this->parseRelationField($target)) {
                             [$relation, $column] = $rc;
@@ -235,10 +252,10 @@ abstract class DataTable extends Component
                             } elseif ($type === 'number' && is_numeric($needle)) {
                                 $sub->orWhere($target, (int) $needle);
                             } elseif ($type === 'boolean') {
-                                if (in_array($lower, ['1','true','yes','active','enabled','on','فعال'], true)) {
+                                if (in_array($lower, ['1', 'true', 'yes', 'active', 'enabled', 'on', 'فعال'], true)) {
                                     $sub->orWhere($target, 1);
                                 }
-                                if (in_array($lower, ['0','false','no','inactive','disabled','off','غير فعال'], true)) {
+                                if (in_array($lower, ['0', 'false', 'no', 'inactive', 'disabled', 'off', 'غير فعال'], true)) {
                                     $sub->orWhere($target, 0);
                                 }
                             } elseif ($type === 'date') {
@@ -254,16 +271,18 @@ abstract class DataTable extends Component
 
         // 3) Column filters (supports relation targets + multi-target via filter_on)
         foreach ($cols as $c) {
-            $type    = $c['type'] ?? 'text';
+            $type = $c['type'] ?? 'text';
             $filterT = $c['filter'] ?? $this->defaultFilterForType($type);
 
             $bindKey = $this->filterBindingKey($c);
-            if (!array_key_exists($bindKey, $this->filters)) continue;
+            if (!array_key_exists($bindKey, $this->filters))
+                continue;
 
             $val = $this->filters[$bindKey];
-            if ($val === '' || $val === null) continue;
+            if ($val === '' || $val === null)
+                continue;
 
-            $filterOn = (array)($c['filter_on'] ?? $c['field']);
+            $filterOn = (array) ($c['filter_on'] ?? $c['field']);
 
             if ($filterT === 'text') {
                 $query->where(function (Builder $w) use ($filterOn, $val) {
@@ -282,7 +301,7 @@ abstract class DataTable extends Component
                 foreach ($filterOn as $target) {
                     if ($rc = $this->parseRelationField($target)) {
                         [$relation, $column] = $rc;
-                        $query->whereHas($relation, fn (Builder $q) => $q->where($column, $val));
+                        $query->whereHas($relation, fn(Builder $q) => $q->where($column, $val));
                     } else {
                         $query->where($target, $val);
                     }
@@ -292,7 +311,7 @@ abstract class DataTable extends Component
                 foreach ($filterOn as $target) {
                     if ($rc = $this->parseRelationField($target)) {
                         [$relation, $column] = $rc;
-                        $query->whereHas($relation, fn (Builder $q) => $q->where($column, $bool));
+                        $query->whereHas($relation, fn(Builder $q) => $q->where($column, $bool));
                     } else {
                         $query->where($target, $bool);
                     }
@@ -300,9 +319,11 @@ abstract class DataTable extends Component
             } elseif ($filterT === 'date_range') {
                 $field = $c['field']; // only local fields supported for date-range
                 $from = Arr::get($val, 'from');
-                $to   = Arr::get($val, 'to');
-                if ($from) $query->whereDate($field, '>=', $from);
-                if ($to)   $query->whereDate($field, '<=', $to);
+                $to = Arr::get($val, 'to');
+                if ($from)
+                    $query->whereDate($field, '>=', $from);
+                if ($to)
+                    $query->whereDate($field, '<=', $to);
             }
         }
 
@@ -329,11 +350,12 @@ abstract class DataTable extends Component
     {
         return match ($type) {
             'boolean' => 'boolean',
-            'date'    => 'none',
-            default   => 'text',
+            'date' => 'none',
+            default => 'text',
         };
     }
-     public function export(string $format = 'xlsx')
+
+    public function export(string $format = 'xlsx')
     {
         $format = strtolower($format);
         $filename = strtolower(class_basename($this->modelClass())) . '-' . now()->format('Ymd_His');
@@ -343,18 +365,14 @@ abstract class DataTable extends Component
 
             return response()->streamDownload(function () use ($columns) {
                 $writer = WriterEntityFactory::createXLSXWriter();
-                // IMPORTANT: we’re controlling headers with streamDownload,
-                // so write directly to output buffer:
                 $writer->openToFile('php://output');
 
-                // Header row
                 $headerCells = array_map(
-                    fn ($c) => WriterEntityFactory::createCell($c['label'] ?? ucfirst($c['field'])),
+                    fn($c) => WriterEntityFactory::createCell($c['label'] ?? ucfirst($c['field'])),
                     $columns
                 );
                 $writer->addRow(WriterEntityFactory::createRow($headerCells));
 
-                // Data rows (chunk to avoid memory issues)
                 $this->buildQuery()->chunk(1000, function ($chunk) use ($columns, $writer) {
                     foreach ($chunk as $row) {
                         $cells = [];
@@ -374,31 +392,34 @@ abstract class DataTable extends Component
         }
 
         if ($format === 'pdf') {
-            // NOTE: for huge datasets consider chunked export or CSV instead
-            $rows    = $this->buildQuery()->get();
+            $rows = $this->buildQuery()->get();
             $columns = $this->columns();
 
-            // Build plain data for the PDF view (formatted)
             $dataRows = [];
             foreach ($rows as $r) {
                 $dataRows[] = array_map(
-                    fn ($c) => $this->formatExportValue($r, $c),
+                    fn($c) => $this->formatExportValue($r, $c),
                     $columns
                 );
             }
 
             $html = view('exports.table-pdf', [
-                'title'   => $this->title ?: class_basename($this->modelClass()),
+                'title' => $this->title ?: class_basename($this->modelClass()),
                 'columns' => $columns,
-                'rows'    => $dataRows,
+                'rows' => $dataRows,
             ])->render();
 
-            $pdf = app('dompdf.wrapper')
-                ->setPaper('a4')
-                ->loadHTML($html);
+            // Use mPDF for PDF generation
+            $mpdf = new Mpdf([
+                'mode' => 'utf-8',
+                'format' => 'A4',
+                'default_font' => 'dejavusans',
+            ]);
 
-            return response()->streamDownload(function () use ($pdf) {
-                echo $pdf->output();
+            $mpdf->WriteHTML($html);
+
+            return response()->streamDownload(function () use ($mpdf) {
+                echo $mpdf->Output('', 'S'); // 'S' returns content as string
             }, "{$filename}.pdf", ['Content-Type' => 'application/pdf']);
         }
 
@@ -410,13 +431,13 @@ abstract class DataTable extends Component
     protected function formatExportValue($row, array $col): string
     {
         $field = $col['field'] ?? '';
-        $type  = $col['type']  ?? 'text';
-        $val   = data_get($row, $field);
+        $type = $col['type'] ?? 'text';
+        $val = data_get($row, $field);
 
         if ($type === 'boolean') {
-            $on  = $col['options'][1] ?? 'Active';
+            $on = $col['options'][1] ?? 'Active';
             $off = $col['options'][0] ?? 'Inactive';
-            return (string) ((bool)$val ? $on : $off);
+            return (string) ((bool) $val ? $on : $off);
         }
 
         if ($type === 'date' && !empty($col['format']) && $val) {

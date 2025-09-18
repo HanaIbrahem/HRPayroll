@@ -2,20 +2,7 @@
 
 {{-- resources/views/components/excel/preview.blade.php --}}
 <div class="rounded-xl border border-base-300 bg-base-100 overflow-auto">
-    {{-- Top bar --}}
-    <div class="px-4 py-3 border-b border-base-300 flex items-center justify-between">
-        <div class="font-semibold">Excel Preview</div>
-        <div class="text-sm text-base-content/60 truncate">
-            <span class="opacity-70">File:</span>
-            <span class="truncate">{{ basename($filePath) }}</span>
-            <span class="mx-2">·</span>
-            <span class="opacity-70">Sheet:</span>
-            <span>{{ $sheet }}</span>
-            <span class="mx-2">·</span>
-            <span class="opacity-70">Rows:</span>
-            <span>{{ count($rows) }}</span>
-        </div>
-    </div>
+   
 
     {{-- Body --}}
     @if ($error)
