@@ -10,6 +10,7 @@ use App\Models\Location;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Zone;
 use App\Models\Checklist;
+use App\Models\VisitedZone;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -23,26 +24,28 @@ class DatabaseSeeder extends Seeder
         // Zone::factory(count: 100)->create();
         // User::factory(20)->create();
         // Location::factory(5)->create();
-        // Employee::factory(10)->create();
+        // Employee::factory(count: 200)->create();
 
-        // Checklist::factory( 50)->create();
-        User::factory()->create(attributes: [
-            'first_name' => 'admin',
-            'last_name' => 'admin',
-            'username' => 'admin',
-            'role'=>'admin'
-        ]);
-        User::factory()->create(attributes: [
-            'first_name' => 'hr',
-            'last_name' => 'hr',
-            'username' => 'hr',
-            'role'=>'hr'
-        ]);
-          User::factory()->create(attributes: [
-            'first_name' => 'manager',
-            'last_name' => 'manager',
-            'username' => 'manager',
-            'role'=>'manager'
-        ]);
+        // Checklist::factory( 100)->create();
+
+        VisitedZone::factory(200)->create();
+        // User::factory()->create(attributes: [
+        //     'first_name' => 'admin',
+        //     'last_name' => 'admin',
+        //     'username' => 'admin',
+        //     'role'=>'admin'
+        // ]);
+        // User::factory()->create(attributes: [
+        //     'first_name' => 'hr',
+        //     'last_name' => 'hr',
+        //     'username' => 'hr',
+        //     'role'=>'hr'
+        // ]);
+        //   User::factory()->create(attributes: [
+        //     'first_name' => 'manager',
+        //     'last_name' => 'manager',
+        //     'username' => 'manager',
+        //     'role'=>'manager'
+        // ]);
     }
 }

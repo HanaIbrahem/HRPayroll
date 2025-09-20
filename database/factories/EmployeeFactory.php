@@ -23,14 +23,18 @@ class EmployeeFactory extends Factory
         $first = $this->faker->firstName();
         $last  = $this->faker->lastName();
 
-        return [
-            'first_name'    => $first,
-            'last_name'     => $last,
-            'location_id'=>Location::factory(),
-            'department_id' => 233,
-            'user_id'       =>123,
-            'position'      => $this->faker->randomElement(['Manager','Staff','Intern','officer','Supervisor','Specialist','Coordinator']),
-            'code'          => 'EMP-'. fake()->numberBetween(1,100) . str_pad((string)$seq++, 5, '0', STR_PAD_LEFT),
-        ];
+        $user = User::inRandomOrder()->with('department')->first();
+
+return [
+    'first_name'    => $first,
+    'last_name'     => $last,
+    'location_id' => Location::inRandomOrder()->value('id') ?? Location::factory(),
+    'department_id' => $user?->department_id ?? 233, // fallback if user is null
+    'user_id'       => $user?->id ?? 2,
+    'position'      => $this->faker->randomElement([
+        'Manager','Staff','Intern','Officer','Supervisor','Specialist','Coordinator'
+    ]),
+    'code' => fake()->unique()->numberBetween(1, 200000) . str_pad((string)$seq++, 5, '0', STR_PAD_LEFT),
+];
     }
 }

@@ -36,7 +36,7 @@ class ZoneEdit extends Component
             'code'          => ['required','string','max:20'],
             'km'            => ['nullable','numeric','min:0'],
             'fixed_rate'    => ['nullable','integer','min:0'],
-            'between_zone'  => ['nullable','integer','min:0'],
+            'between_zone'  => ['required','integer','min:0'],
             'description'   => ['nullable','string','max:2000'],
         ];
     }
