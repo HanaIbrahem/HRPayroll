@@ -27,8 +27,8 @@ class ChecklistEdit extends Component
     public $file; // optional replacement
 
     public string $note = '';
-    public ?string $start_date = null; 
-    public ?string $end_date   = null;
+    public ?string $start_date = null;
+    public ?string $end_date = null;
 
     public function mount(Checklist $checklist): void
     {
@@ -45,7 +45,7 @@ class ChecklistEdit extends Component
 
         // Prefill note
         $this->note = (string) ($checklist->note ?? '');
-         $this->start_date = $checklist->start_date
+        $this->start_date = $checklist->start_date
             ? Carbon::parse($checklist->start_date)->toDateString()
             : Carbon::now()->startOfMonth()->toDateString();
 
@@ -56,7 +56,7 @@ class ChecklistEdit extends Component
 
     public function render()
     {
-        if (! $this->checklist->canEdit()) {
+        if (!$this->checklist->canEdit()) {
             return redirect()->back();
         }
 
@@ -67,8 +67,8 @@ class ChecklistEdit extends Component
                 $s = $this->employeeSearch;
                 $q->where(function ($qq) use ($s) {
                     $qq->where('first_name', 'like', "%{$s}%")
-                       ->orWhere('last_name', 'like', "%{$s}%")
-                       ->orWhere('code', 'like', "%{$s}%");
+                        ->orWhere('last_name', 'like', "%{$s}%")
+                        ->orWhere('code', 'like', "%{$s}%");
                 });
             })
             ->orderBy('first_name')
@@ -94,7 +94,7 @@ class ChecklistEdit extends Component
             'file' => ['nullable', 'file', 'mimes:xlsx,xls,csv', 'max:2480'],
             'note' => ['nullable', 'string', 'max:500'],
             'start_date' => ['required', 'date', 'before_or_equal:end_date'],
-            'end_date'   => ['required', 'date', 'after_or_equal:start_date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
         ];
     }
 
@@ -130,9 +130,9 @@ class ChecklistEdit extends Component
             }
 
             $disk = Storage::disk('public');
-            $dir  = 'checklists';
+            $folder = now()->format('Y/m') . '/checklists';
 
-            $oldRel    = $this->checklist->filename;
+            $oldRel = $this->checklist->filename;
             $reuseName = $oldRel ? basename($oldRel) : null;
 
             if ($reuseName) {
@@ -140,39 +140,38 @@ class ChecklistEdit extends Component
             } else {
                 $orig = $this->file->getClientOriginalName();
                 $base = Str::slug(pathinfo($orig, PATHINFO_FILENAME)) ?: 'checklist';
-                $ext  = strtolower($this->file->getClientOriginalExtension() ?: 'xlsx');
+                $ext = strtolower($this->file->getClientOriginalExtension() ?: 'xlsx');
                 $target = "{$base}.{$ext}";
                 $i = 1;
-                while ($disk->exists("$dir/$target")) {
+                while ($disk->exists("$folder/$target")) {
                     $target = "{$base}-{$i}.{$ext}";
                     $i++;
                 }
             }
 
-            // 2) Store new file first
-            $newPath = $this->file->storeAs($dir, $target, 'public'); // "checklists/filename.xlsx"
+            // 2) Store new file in structured folder
+            $newPath = $this->file->storeAs($folder, $target, 'public');
 
-            // 3) Delete the previous file if path changed
+            // 3) Delete the previous file if different
             if ($oldRel && $oldRel !== $newPath) {
                 $disk->delete($oldRel);
             }
 
-            // 4) Update model path
+            // 4) Update model with new path
             $this->checklist->filename = $newPath;
         }
 
-        $this->checklist->start_date  = $this->start_date;
-        $this->checklist->end_date    = $this->end_date;
-        // Update employee + note
+        $this->checklist->start_date = $this->start_date;
+        $this->checklist->end_date = $this->end_date;
         $this->checklist->employee_id = $employee->id;
-        $this->checklist->note        = $this->note;
+        $this->checklist->note = $this->note;
         $this->checklist->save();
 
-        // Reset only the file field
         $this->reset('file');
         $this->resetValidation();
 
         $this->dispatch('toast', type: 'success', message: 'Checklist updated.');
         $this->dispatch('checklists:updated');
     }
+
 }

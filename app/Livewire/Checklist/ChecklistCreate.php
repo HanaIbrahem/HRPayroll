@@ -103,8 +103,8 @@ class ChecklistCreate extends Component
             $this->addError('file', collect($e->errors())->flatten()->join(' '));
             return;
         }
-        // 2) Store after successful validation
-        $path = $this->file->store('checklists', 'public');
+        $folderPath = now()->format('Y/m') . '/checklists';
+        $path = $this->file->store($folderPath, 'public');
 
         Checklist::create([
             'user_id' => Auth::id(),
